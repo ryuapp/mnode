@@ -1,0 +1,10 @@
+{
+  "fmt": {
+    "proseWrap": "preserve"
+  },
+  "tasks": {
+    "format": "cargo fmt && deno fmt && deno lint --fix",
+    "run:example": "cargo run -- runtime/example.js",
+    "compile:example": "cargo run --release -- -c runtime/example.js"
+  }
+}

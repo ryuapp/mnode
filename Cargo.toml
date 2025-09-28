@@ -1,0 +1,12 @@
+[workspace]
+resolver = "3"
+members = [
+    "runtime",
+]
+
+[profile.release]
+lto = true
+opt-level = "s"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
