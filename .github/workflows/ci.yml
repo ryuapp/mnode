@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: Swatinem/rust-cache@v2
+      - name: Check Rust Code
+        run: cargo fmt --check
+      - name: Lint JavaScript Code
+        run: deno lint
+      - name: Check formatting
+        run: deno fmt --check
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    permissions: {}
+    strategy:
+      matrix:
+        os: ["windows-latest", "ubuntu-latest", "macos-latest"]
+    steps:
+      - uses: actions/checkout@v5
+      - run: rustup toolchain install stable --profile minimal
+      - name: Check
+        run: cargo check --all-targets
+      - name: Build
+        run: cargo build
+      - name: Test
+        run: cargo test
