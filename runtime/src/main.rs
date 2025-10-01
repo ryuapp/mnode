@@ -1,5 +1,7 @@
 use clap::{Arg, Command};
-use quickjs_rusty::{Context, ExecutionError};
+use rquickjs::function::Func;
+use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
+use std::error::Error;
 use std::fs;
 use std::io::{Read, Write};
 
@@ -10,7 +12,7 @@ mod node;
 const MAGIC_MARKER: &[u8] = b"__JS_CODE_START__";
 const MAGIC_END: &[u8] = b"__JS_CODE_END__";
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let matches = Command::new("mnode")
         .about("Minimal JavaScript runtime for CLI tool")
         .arg(Arg::new("file").help("JavaScript file to run").index(1))
@@ -67,51 +69,55 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn run_js_code(js_code: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn run_js_code(js_code: &str) -> Result<(), Box<dyn Error>> {
     run_js_code_with_path(js_code, "")
 }
 
-fn run_js_code_with_path(
-    js_code: &str,
-    script_path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let context = Context::builder().build()?;
+fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn Error>> {
+    let runtime = Runtime::new()?;
 
-    context.add_callback("__print", |msg: String| -> i32 {
-        println!("{}", msg);
-        0
-    })?;
+    // Set module loader before creating context
+    runtime.set_loader(node::NodeResolver, node::NodeLoader);
 
-    setup_extensions(&context, script_path)?;
+    let context = Context::full(&runtime)?;
 
-    let result = if js_code.contains("import ") || js_code.contains("export ") {
-        context.eval_module(js_code, true)
-    } else {
-        context.eval(js_code, true)
-    };
+    context.with(|ctx| -> Result<(), Box<dyn Error>> {
+        setup_extensions(&ctx, script_path)?;
 
-    if let Err(e) = result {
-        match e {
-            ExecutionError::Exception(js_value) => {
-                let error_message = js_value
-                    .to_string()
-                    .unwrap_or_else(|_| "Unknown error".to_string());
-                eprintln!("{}", error_message);
+        let result = if js_code.contains("import ") || js_code.contains("export ") {
+            use rquickjs::Module;
+            Module::evaluate(ctx.clone(), script_path, js_code).and_then(|m| m.finish::<()>())
+        } else {
+            ctx.eval::<(), _>(js_code)
+        };
+
+        if let Err(caught) = result.catch(&ctx) {
+            match caught {
+                CaughtError::Exception(exception) => {
+                    if let Some(message) = exception.message() {
+                        eprintln!("Error: {}", message);
+                    }
+                    if let Some(stack) = exception.stack() {
+                        eprintln!("{}", stack);
+                    }
+                }
+                CaughtError::Value(value) => {
+                    eprintln!("Error: {:?}", value);
+                }
+                CaughtError::Error(error) => {
+                    eprintln!("Error: {:?}", error);
+                }
             }
-            _ => {
-                eprintln!("{:?}", e);
-            }
+            std::process::exit(1);
         }
-        std::process::exit(1);
-    }
+
+        Ok(())
+    })?;
 
     Ok(())
 }
 
-fn compile_js_to_executable(
-    js_file: &str,
-    output_name: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<dyn Error>> {
     let js_code = fs::read_to_string(js_file)?;
 
     // Get current executable path
@@ -143,7 +149,7 @@ fn compile_js_to_executable(
     Ok(())
 }
 
-fn extract_embedded_js() -> Result<String, Box<dyn std::error::Error>> {
+fn extract_embedded_js() -> Result<String, Box<dyn Error>> {
     let exe_path = std::env::current_exe()?;
     let mut file = fs::File::open(&exe_path)?;
     let mut buffer = Vec::new();
@@ -165,30 +171,32 @@ fn find_pattern(data: &[u8], pattern: &[u8]) -> Option<usize> {
         .rposition(|window| window == pattern)
 }
 
-fn setup_extensions(
-    context: &Context,
-    script_path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
-    context.eval(internal::load_setup(), false)?;
+fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
+    ctx.eval::<(), _>(internal::load_setup())?;
+
+    // Register __print for console
+    let print_fn = Func::from(|msg: String| {
+        println!("{}", msg);
+    });
+    ctx.globals().set("__print", print_fn)?;
 
     // Navigator
-    ext::navigator::setup(context)?;
-    context.eval(&ext::load_navigator(), false)?;
+    ext::navigator::setup(ctx)?;
+    ctx.eval::<(), _>(ext::load_navigator())?;
 
     // URL
-    ext::url::setup(context)?;
-    context.eval(&ext::load_url(), false)?;
+    ext::url::setup(ctx)?;
+    ctx.eval::<(), _>(ext::load_url())?;
 
-    // Load JS modules
-    context.eval(&ext::load_console(), false)?;
+    // Console
+    ctx.eval::<(), _>(ext::load_console())?;
 
     // Node.js modules
-    node::fs::setup(context)?;
-    node::process::setup(context, script_path)?;
-    node::set_module_loader(context)?;
+    node::fs::setup(ctx)?;
+    node::process::setup(ctx, script_path)?;
 
     // Global process
-    context.eval("globalThis.process = { env: JSON.parse(globalThis[Symbol.for('mnode.internal')].getEnv()), argv: JSON.parse(globalThis[Symbol.for('mnode.internal')].getArgv()), exit: (code = 0) => globalThis[Symbol.for('mnode.internal')].exit(code) };", false)?;
+    ctx.eval::<(), _>("globalThis.process = { env: JSON.parse(globalThis[Symbol.for('mnode.internal')].getEnv()), argv: JSON.parse(globalThis[Symbol.for('mnode.internal')].getArgv()), exit: (code = 0) => globalThis[Symbol.for('mnode.internal')].exit(code) };")?;
 
     Ok(())
 }

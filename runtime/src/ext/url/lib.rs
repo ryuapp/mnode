@@ -1,12 +1,25 @@
-use crate::internal::add_internal_function;
-use quickjs_rusty::Context;
+use crate::add_internal_function;
+use rquickjs::Ctx;
+use std::error::Error;
 use url::Url;
 
-pub fn setup(context: &Context) -> Result<(), Box<dyn std::error::Error>> {
-    context.eval("globalThis[Symbol.for('mnode.internal')].url = {};", false)?;
+pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
+    ctx.eval::<(), _>("globalThis[Symbol.for('mnode.internal')].url = {};")?;
 
-    add_internal_function(context, "url.parse", parse_url)?;
-    add_internal_function(context, "url.setComponent", set_url_component)?;
+    add_internal_function!(ctx, "url.parse", |url_str: String,
+                                              base: String|
+     -> String {
+        parse_url(url_str, base)
+            .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))
+    });
+
+    add_internal_function!(ctx, "url.setComponent", |url_str: String,
+                                                     component: String,
+                                                     value: String|
+     -> String {
+        set_url_component(url_str, component, value)
+            .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))
+    });
 
     Ok(())
 }

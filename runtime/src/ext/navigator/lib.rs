@@ -1,6 +1,7 @@
-use quickjs_rusty::Context;
+use rquickjs::Ctx;
+use std::error::Error;
 
-pub fn setup(context: &Context) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     let platform = if cfg!(target_os = "macos") {
         "MacIntel"
     } else if cfg!(windows) {
@@ -17,13 +18,10 @@ pub fn setup(context: &Context) -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     };
 
-    context.eval(
-        &format!(
-            "globalThis[Symbol.for('mnode.internal')].platform = '{}';",
-            platform
-        ),
-        false,
-    )?;
+    ctx.eval::<(), _>(format!(
+        "globalThis[Symbol.for('mnode.internal')].platform = '{}';",
+        platform
+    ))?;
 
     Ok(())
 }

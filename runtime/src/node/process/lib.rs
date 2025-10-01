@@ -1,15 +1,17 @@
-use crate::internal::add_internal_function;
-use quickjs_rusty::Context;
+use crate::add_internal_function;
+use rquickjs::Ctx;
+use std::error::Error;
 use std::sync::OnceLock;
 
 static SCRIPT_PATH: OnceLock<String> = OnceLock::new();
 
-pub fn setup(context: &Context, script_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup(ctx: &Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
     SCRIPT_PATH.get_or_init(|| script_path.to_string());
 
-    add_internal_function(context, "getEnv", get_env)?;
-    add_internal_function(context, "getArgv", get_argv)?;
-    add_internal_function(context, "exit", exit)?;
+    add_internal_function!(ctx, "getEnv", || get_env().unwrap_or_else(|e| e));
+    add_internal_function!(ctx, "getArgv", || get_argv().unwrap_or_else(|e| e));
+    add_internal_function!(ctx, "exit", |code: i32| exit(code).unwrap_or(0));
+
     Ok(())
 }
 

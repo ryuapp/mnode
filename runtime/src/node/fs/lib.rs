@@ -1,6 +1,7 @@
-use crate::internal::add_internal_function;
-use quickjs_rusty::Context;
+use crate::add_internal_function;
+use rquickjs::Ctx;
 use serde_json::json;
+use std::error::Error;
 use std::fs;
 
 #[cfg(windows)]
@@ -89,12 +90,32 @@ fn get_blksize(path: &str) -> Result<u64, String> {
     }
 }
 
-pub fn setup(context: &Context) -> Result<(), Box<dyn std::error::Error>> {
-    add_internal_function(context, "readFileSync", read_file_sync)?;
-    add_internal_function(context, "writeFileSync", write_file_sync)?;
-    add_internal_function(context, "existsSync", exists_sync)?;
-    add_internal_function(context, "statSync", stat_sync)?;
-    add_internal_function(context, "readdirSync", readdir_sync)?;
+pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn Error>> {
+    add_internal_function!(ctx, "readFileSync", |path: String| {
+        read_file_sync(path)
+            .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))
+    });
+
+    add_internal_function!(ctx, "writeFileSync", |path: String, data: String| {
+        write_file_sync(path, data).map(|_| 0).unwrap_or_else(|e| {
+            eprintln!("{}", e);
+            -1
+        })
+    });
+
+    add_internal_function!(ctx, "existsSync", |path: String| {
+        exists_sync(path).unwrap_or(false)
+    });
+
+    add_internal_function!(ctx, "statSync", |path: String| {
+        stat_sync(path).unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))
+    });
+
+    add_internal_function!(ctx, "readdirSync", |path: String| {
+        readdir_sync(path)
+            .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))
+    });
+
     Ok(())
 }
 
