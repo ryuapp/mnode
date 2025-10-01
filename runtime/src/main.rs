@@ -1,4 +1,5 @@
 use clap::{Arg, Command};
+use rquickjs::function::Func;
 use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
 use std::error::Error;
 use std::fs;
@@ -171,8 +172,6 @@ fn find_pattern(data: &[u8], pattern: &[u8]) -> Option<usize> {
 }
 
 fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
-    use rquickjs::function::Func;
-
     ctx.eval::<(), _>(internal::load_setup())?;
 
     // Register __print for console
