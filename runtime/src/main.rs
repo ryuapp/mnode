@@ -1,5 +1,5 @@
 use clap::{Arg, Command};
-use quickjs_rusty::{Context, ExecutionError};
+use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
 use std::fs;
 use std::io::{Read, Write};
 
@@ -75,35 +75,45 @@ fn run_js_code_with_path(
     js_code: &str,
     script_path: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let context = Context::builder().build()?;
+    let runtime = Runtime::new()?;
 
-    context.add_callback("__print", |msg: String| -> i32 {
-        println!("{}", msg);
-        0
-    })?;
+    // Set module loader before creating context
+    runtime.set_loader(node::NodeResolver, node::NodeLoader);
 
-    setup_extensions(&context, script_path)?;
+    let context = Context::full(&runtime)?;
 
-    let result = if js_code.contains("import ") || js_code.contains("export ") {
-        context.eval_module(js_code, true)
-    } else {
-        context.eval(js_code, true)
-    };
+    context.with(|ctx| -> Result<(), Box<dyn std::error::Error>> {
+        setup_extensions(&ctx, script_path)?;
 
-    if let Err(e) = result {
-        match e {
-            ExecutionError::Exception(js_value) => {
-                let error_message = js_value
-                    .to_string()
-                    .unwrap_or_else(|_| "Unknown error".to_string());
-                eprintln!("{}", error_message);
+        let result = if js_code.contains("import ") || js_code.contains("export ") {
+            use rquickjs::Module;
+            Module::evaluate(ctx.clone(), script_path, js_code).and_then(|m| m.finish::<()>())
+        } else {
+            ctx.eval::<(), _>(js_code)
+        };
+
+        if let Err(caught) = result.catch(&ctx) {
+            match caught {
+                CaughtError::Exception(exception) => {
+                    if let Some(message) = exception.message() {
+                        eprintln!("Error: {}", message);
+                    }
+                    if let Some(stack) = exception.stack() {
+                        eprintln!("{}", stack);
+                    }
+                }
+                CaughtError::Value(value) => {
+                    eprintln!("Error: {:?}", value);
+                }
+                CaughtError::Error(error) => {
+                    eprintln!("Error: {:?}", error);
+                }
             }
-            _ => {
-                eprintln!("{:?}", e);
-            }
+            std::process::exit(1);
         }
-        std::process::exit(1);
-    }
+
+        Ok(())
+    })?;
 
     Ok(())
 }
@@ -166,29 +176,37 @@ fn find_pattern(data: &[u8], pattern: &[u8]) -> Option<usize> {
 }
 
 fn setup_extensions(
-    context: &Context,
+    ctx: &rquickjs::Ctx,
     script_path: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    context.eval(internal::load_setup(), false)?;
+    use rquickjs::function::Func;
+
+    ctx.eval::<(), _>(internal::load_setup())?;
+
+    // Register __print for console
+    let print_fn = Func::from(|msg: String| {
+        println!("{}", msg);
+    });
+    ctx.globals().set("__print", print_fn)?;
 
     // Navigator
-    ext::navigator::setup(context)?;
-    context.eval(&ext::load_navigator(), false)?;
+    ext::navigator::setup(ctx)?;
+    ctx.eval::<(), _>(ext::load_navigator())?;
 
     // URL
-    ext::url::setup(context)?;
-    context.eval(&ext::load_url(), false)?;
+    ext::url::setup(ctx)?;
+    ctx.eval::<(), _>(ext::load_url())?;
 
-    // Load JS modules
-    context.eval(&ext::load_console(), false)?;
+    // Console
+    ctx.eval::<(), _>(ext::load_console())?;
 
     // Node.js modules
-    node::fs::setup(context)?;
-    node::process::setup(context, script_path)?;
-    node::set_module_loader(context)?;
+    node::fs::setup(ctx)?;
+    node::process::setup(ctx, script_path)?;
+    node::set_module_loader(ctx)?;
 
     // Global process
-    context.eval("globalThis.process = { env: JSON.parse(globalThis[Symbol.for('mnode.internal')].getEnv()), argv: JSON.parse(globalThis[Symbol.for('mnode.internal')].getArgv()), exit: (code = 0) => globalThis[Symbol.for('mnode.internal')].exit(code) };", false)?;
+    ctx.eval::<(), _>("globalThis.process = { env: JSON.parse(globalThis[Symbol.for('mnode.internal')].getEnv()), argv: JSON.parse(globalThis[Symbol.for('mnode.internal')].getArgv()), exit: (code = 0) => globalThis[Symbol.for('mnode.internal')].exit(code) };")?;
 
     Ok(())
 }
