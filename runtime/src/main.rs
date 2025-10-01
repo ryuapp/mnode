@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap_lex::RawArgs;
 use rquickjs::function::Func;
 use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
 use std::error::Error;
@@ -13,18 +13,6 @@ const MAGIC_MARKER: &[u8] = b"__JS_CODE_START__";
 const MAGIC_END: &[u8] = b"__JS_CODE_END__";
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let matches = Command::new("mnode")
-        .about("Minimal JavaScript runtime for CLI tool")
-        .arg(Arg::new("file").help("JavaScript file to run").index(1))
-        .arg(
-            Arg::new("compile")
-                .short('c')
-                .long("compile")
-                .help("Compile JavaScript into a self-contained executable")
-                .action(clap::ArgAction::SetTrue),
-        )
-        .get_matches();
-
     // Check if this executable has embedded JavaScript code and no arguments
     if std::env::args().len() == 1 {
         if let Ok(embedded_code) = extract_embedded_js() {
@@ -32,12 +20,33 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let file_path = matches
-        .get_one::<String>("file")
-        .ok_or("JavaScript file is required")?;
+    let raw = RawArgs::from_args();
+    let mut cursor = raw.cursor();
+    raw.next(&mut cursor); // skip program name
+
+    let mut file_path: Option<String> = None;
+    let mut is_compile = false;
+
+    while let Some(arg) = raw.next(&mut cursor) {
+        if let Ok(value) = arg.to_value() {
+            match value {
+                "--compile" | "-c" => {
+                    is_compile = true;
+                }
+                _ if !value.starts_with('-') => {
+                    if file_path.is_none() {
+                        file_path = Some(value.to_string());
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let file_path = file_path.ok_or("JavaScript file is required")?;
 
     // Convert file path to absolute path
-    let file_path_buf = std::path::Path::new(file_path);
+    let file_path_buf = std::path::Path::new(&file_path);
     let absolute_file_path = if file_path_buf.is_absolute() {
         file_path_buf.to_path_buf()
     } else {
@@ -50,8 +59,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect::<std::path::PathBuf>()
         .display()
         .to_string();
-
-    let is_compile = matches.get_flag("compile");
 
     if is_compile {
         let output_name = absolute_file_path
