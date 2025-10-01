@@ -33,10 +33,3 @@ impl Loader for NodeLoader {
         Module::declare(ctx.clone(), name, source)
     }
 }
-
-pub fn set_module_loader(_ctx: &Ctx) -> std::result::Result<(), Box<dyn std::error::Error>> {
-    // Module loader is set on the Runtime, not Context
-    // This function is kept for API compatibility but does nothing
-    // The actual loader setup happens in main.rs before context creation
-    Ok(())
-}

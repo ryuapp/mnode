@@ -1,5 +1,6 @@
 use clap::{Arg, Command};
 use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
+use std::error::Error;
 use std::fs;
 use std::io::{Read, Write};
 
@@ -10,7 +11,7 @@ mod node;
 const MAGIC_MARKER: &[u8] = b"__JS_CODE_START__";
 const MAGIC_END: &[u8] = b"__JS_CODE_END__";
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let matches = Command::new("mnode")
         .about("Minimal JavaScript runtime for CLI tool")
         .arg(Arg::new("file").help("JavaScript file to run").index(1))
@@ -67,14 +68,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn run_js_code(js_code: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn run_js_code(js_code: &str) -> Result<(), Box<dyn Error>> {
     run_js_code_with_path(js_code, "")
 }
 
-fn run_js_code_with_path(
-    js_code: &str,
-    script_path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn Error>> {
     let runtime = Runtime::new()?;
 
     // Set module loader before creating context
@@ -82,7 +80,7 @@ fn run_js_code_with_path(
 
     let context = Context::full(&runtime)?;
 
-    context.with(|ctx| -> Result<(), Box<dyn std::error::Error>> {
+    context.with(|ctx| -> Result<(), Box<dyn Error>> {
         setup_extensions(&ctx, script_path)?;
 
         let result = if js_code.contains("import ") || js_code.contains("export ") {
@@ -118,10 +116,7 @@ fn run_js_code_with_path(
     Ok(())
 }
 
-fn compile_js_to_executable(
-    js_file: &str,
-    output_name: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<dyn Error>> {
     let js_code = fs::read_to_string(js_file)?;
 
     // Get current executable path
@@ -153,7 +148,7 @@ fn compile_js_to_executable(
     Ok(())
 }
 
-fn extract_embedded_js() -> Result<String, Box<dyn std::error::Error>> {
+fn extract_embedded_js() -> Result<String, Box<dyn Error>> {
     let exe_path = std::env::current_exe()?;
     let mut file = fs::File::open(&exe_path)?;
     let mut buffer = Vec::new();
@@ -175,10 +170,7 @@ fn find_pattern(data: &[u8], pattern: &[u8]) -> Option<usize> {
         .rposition(|window| window == pattern)
 }
 
-fn setup_extensions(
-    ctx: &rquickjs::Ctx,
-    script_path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
     use rquickjs::function::Func;
 
     ctx.eval::<(), _>(internal::load_setup())?;
@@ -203,7 +195,6 @@ fn setup_extensions(
     // Node.js modules
     node::fs::setup(ctx)?;
     node::process::setup(ctx, script_path)?;
-    node::set_module_loader(ctx)?;
 
     // Global process
     ctx.eval::<(), _>("globalThis.process = { env: JSON.parse(globalThis[Symbol.for('mnode.internal')].getEnv()), argv: JSON.parse(globalThis[Symbol.for('mnode.internal')].getArgv()), exit: (code = 0) => globalThis[Symbol.for('mnode.internal')].exit(code) };")?;

@@ -1,10 +1,11 @@
 use crate::add_internal_function;
 use rquickjs::Ctx;
 use serde_json::json;
+use std::error::Error;
 use std::fs;
 
 #[cfg(windows)]
-fn get_windows_file_info(path: &str) -> std::result::Result<(u64, u64, u32, u64), String> {
+fn get_windows_file_info(path: &str) -> Result<(u64, u64, u32, u64), String> {
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
     use windows::Win32::Foundation::CloseHandle;
@@ -51,7 +52,7 @@ fn get_windows_file_info(path: &str) -> std::result::Result<(u64, u64, u32, u64)
 }
 
 #[cfg(windows)]
-fn get_blksize(path: &str) -> std::result::Result<u64, String> {
+fn get_blksize(path: &str) -> Result<u64, String> {
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
     use windows::Win32::Storage::FileSystem::GetDiskFreeSpaceW;
@@ -89,7 +90,7 @@ fn get_blksize(path: &str) -> std::result::Result<u64, String> {
     }
 }
 
-pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn std::error::Error>> {
+pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn Error>> {
     add_internal_function!(ctx, "readFileSync", |path: String| {
         read_file_sync(path)
             .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))
@@ -118,20 +119,20 @@ pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn read_file_sync(path: String) -> std::result::Result<String, String> {
+pub fn read_file_sync(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| format!("Failed to read file {}: {}", path, e))
 }
 
-pub fn write_file_sync(path: String, data: String) -> std::result::Result<i32, String> {
+pub fn write_file_sync(path: String, data: String) -> Result<i32, String> {
     fs::write(&path, data).map_err(|e| format!("Failed to write file {}: {}", path, e))?;
     Ok(0)
 }
 
-pub fn exists_sync(path: String) -> std::result::Result<bool, String> {
+pub fn exists_sync(path: String) -> Result<bool, String> {
     Ok(fs::metadata(&path).is_ok())
 }
 
-pub fn stat_sync(path: String) -> std::result::Result<String, String> {
+pub fn stat_sync(path: String) -> Result<String, String> {
     let metadata =
         fs::metadata(&path).map_err(|e| format!("Failed to stat file {}: {}", path, e))?;
 
@@ -275,7 +276,7 @@ pub fn stat_sync(path: String) -> std::result::Result<String, String> {
     Ok(serde_json::to_string(&stat).unwrap())
 }
 
-pub fn readdir_sync(path: String) -> std::result::Result<String, String> {
+pub fn readdir_sync(path: String) -> Result<String, String> {
     let entries = fs::read_dir(&path)
         .map_err(|e| format!("Failed to read directory {}: {}", path, e))?
         .filter_map(|entry| entry.ok())

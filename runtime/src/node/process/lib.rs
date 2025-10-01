@@ -1,10 +1,11 @@
 use crate::add_internal_function;
 use rquickjs::Ctx;
+use std::error::Error;
 use std::sync::OnceLock;
 
 static SCRIPT_PATH: OnceLock<String> = OnceLock::new();
 
-pub fn setup(ctx: &Ctx, script_path: &str) -> std::result::Result<(), Box<dyn std::error::Error>> {
+pub fn setup(ctx: &Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
     SCRIPT_PATH.get_or_init(|| script_path.to_string());
 
     add_internal_function!(ctx, "getEnv", || get_env().unwrap_or_else(|e| e));
@@ -14,12 +15,12 @@ pub fn setup(ctx: &Ctx, script_path: &str) -> std::result::Result<(), Box<dyn st
     Ok(())
 }
 
-pub fn get_env() -> std::result::Result<String, String> {
+pub fn get_env() -> Result<String, String> {
     let env_vars: std::collections::HashMap<String, String> = std::env::vars().collect();
     Ok(serde_json::to_string(&env_vars).unwrap())
 }
 
-pub fn get_argv() -> std::result::Result<String, String> {
+pub fn get_argv() -> Result<String, String> {
     let mut args: Vec<String> = std::env::args().collect();
 
     // Convert the first argument (executable path) to absolute path
@@ -43,6 +44,6 @@ pub fn get_argv() -> std::result::Result<String, String> {
     Ok(serde_json::to_string(&args).unwrap())
 }
 
-pub fn exit(code: i32) -> std::result::Result<i32, String> {
+pub fn exit(code: i32) -> Result<i32, String> {
     std::process::exit(code);
 }

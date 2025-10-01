@@ -1,6 +1,7 @@
 use rquickjs::Ctx;
+use std::error::Error;
 
-pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     let platform = if cfg!(target_os = "macos") {
         "MacIntel"
     } else if cfg!(windows) {

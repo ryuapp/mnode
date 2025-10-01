@@ -1,8 +1,9 @@
 use crate::add_internal_function;
 use rquickjs::Ctx;
+use std::error::Error;
 use url::Url;
 
-pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn std::error::Error>> {
+pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     ctx.eval::<(), _>("globalThis[Symbol.for('mnode.internal')].url = {};")?;
 
     add_internal_function!(ctx, "url.parse", |url_str: String,
@@ -23,7 +24,7 @@ pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn parse_url(url_str: String, base: String) -> std::result::Result<String, String> {
+pub fn parse_url(url_str: String, base: String) -> Result<String, String> {
     let parsed = if base.is_empty() {
         Url::parse(&url_str).map_err(|e| e.to_string())?
     } else {
@@ -58,7 +59,7 @@ pub fn set_url_component(
     url_str: String,
     component: String,
     value: String,
-) -> std::result::Result<String, String> {
+) -> Result<String, String> {
     let mut parsed = Url::parse(&url_str).map_err(|e| e.to_string())?;
 
     match component.as_str() {
