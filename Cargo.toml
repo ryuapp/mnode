@@ -6,7 +6,7 @@ members = [
 
 [profile.release]
 lto = true
-opt-level = "s"
+opt-level = "z"
 codegen-units = 1
 panic = "abort"
 strip = "symbols"
