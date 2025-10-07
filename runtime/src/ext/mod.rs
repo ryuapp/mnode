@@ -1,3 +1,4 @@
+pub mod fetch;
 pub mod navigator;
 pub mod url;
 

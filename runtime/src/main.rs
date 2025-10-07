@@ -118,6 +118,9 @@ fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn
             std::process::exit(1);
         }
 
+        // Execute all pending jobs (promises, microtasks)
+        while ctx.execute_pending_job() {}
+
         Ok(())
     })?;
 
@@ -197,6 +200,10 @@ fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dy
 
     // Console
     ctx.eval::<(), _>(ext::load_console())?;
+
+    // Fetch
+    ext::fetch::setup(ctx)?;
+    ctx.eval::<(), _>(ext::load_fetch())?;
 
     // Node.js modules
     node::fs::setup(ctx)?;
