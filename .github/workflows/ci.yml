@@ -15,7 +15,7 @@ concurrency:
 jobs:
   format:
     name: Format
-    runs-on: ubuntu-latest
+    runs-on: openci-runner-beta
     permissions: {}
     steps:
       - uses: actions/checkout@v5
@@ -34,7 +34,12 @@ jobs:
     permissions: {}
     strategy:
       matrix:
-        os: ["windows-latest", "ubuntu-latest", "macos-latest"]
+        os: [
+          "windows-latest",
+          "ubuntu-latest",
+          "openci-runner-beta",
+          "macos-latest",
+        ]
     steps:
       - uses: actions/checkout@v5
       - run: rustup toolchain install stable --profile minimal
