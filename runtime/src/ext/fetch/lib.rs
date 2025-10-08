@@ -11,14 +11,13 @@ struct FetchState {
     pending: HashMap<u64, Arc<Mutex<FetchResult>>>,
 }
 
-static RUNTIME: once_cell::sync::Lazy<tokio::runtime::Runtime> =
-    once_cell::sync::Lazy::new(|| {
-        tokio::runtime::Builder::new_multi_thread()
-            .worker_threads(4)
-            .enable_all()
-            .build()
-            .expect("Failed to create Tokio runtime")
-    });
+static RUNTIME: once_cell::sync::Lazy<tokio::runtime::Runtime> = once_cell::sync::Lazy::new(|| {
+    tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .enable_all()
+        .build()
+        .expect("Failed to create Tokio runtime")
+});
 
 static FETCH_STATE: once_cell::sync::Lazy<Mutex<FetchState>> = once_cell::sync::Lazy::new(|| {
     Mutex::new(FetchState {
@@ -203,8 +202,8 @@ impl tokio::io::AsyncWrite for IoStream {
 async fn fetch_impl(
     req: hyper::Request<http_body_util::Empty<bytes::Bytes>>,
 ) -> Result<hyper::Response<hyper::body::Incoming>, String> {
-    use tokio::net::TcpStream;
     use hyper_util::rt::TokioIo;
+    use tokio::net::TcpStream;
 
     let host = req.uri().host().ok_or("Missing host")?;
     let scheme = req.uri().scheme_str().unwrap_or("http");

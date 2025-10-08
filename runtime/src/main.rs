@@ -201,6 +201,10 @@ fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dy
     // Console
     ctx.eval::<(), _>(ext::load_console())?;
 
+    // Encoding (btoa, atob, TextEncoder, TextDecoder)
+    ext::encoding::lib::setup(ctx)?;
+    ctx.eval::<(), _>(ext::encoding::load_encoding())?;
+
     // Fetch
     ext::fetch::setup(ctx)?;
     ctx.eval::<(), _>(ext::load_fetch())?;
