@@ -33,6 +33,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions: {}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-24.04
@@ -43,13 +44,29 @@ jobs:
             target: aarch64-apple-darwin
           - os: windows-2025
             target: x86_64-pc-windows-msvc
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            use_bindgen: true
     steps:
       - uses: actions/checkout@v5
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Install LLVM (Windows ARM)
+        if: matrix.use_bindgen
+        run: |
+          choco install llvm -y
+          echo "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+        shell: pwsh
+      - name: Build (with bindgen)
+        if: matrix.use_bindgen
+        run: cargo build --release --features rquickjs/bindgen
       - name: Build
+        if: ${{ !matrix.use_bindgen }}
         run: cargo build --release
+      - name: Test
+        if: ${{ !matrix.use_bindgen }}
+        run: cargo test
       - name: Check binary size (Unix)
         if: runner.os != 'Windows'
         run: ls -lh target/release/mnode
