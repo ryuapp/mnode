@@ -52,10 +52,14 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Install LLVM (Windows ARM)
+      - name: Install LLVM (Windows ARM64)
         if: matrix.use_bindgen
         run: |
-          choco install llvm -y
+          $llvmVersion = "19.1.7"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-woa64.exe"
+          $llvmInstaller = "$env:TEMP\llvm-installer.exe"
+          Invoke-WebRequest -Uri $llvmUrl -OutFile $llvmInstaller
+          Start-Process -FilePath $llvmInstaller -ArgumentList "/S" -Wait
           echo "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
         shell: pwsh
       - name: Build (with bindgen)
