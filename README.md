@@ -8,6 +8,15 @@ mnode is a minimal JavaScript runtime for CLI tools. It's built on QuickJS and R
 cargo install --git https://github.com/ryuapp/mnode mnode
 ```
 
+### How to use
+
+```sh
+# Run JavaScript code
+mnode hello.js
+# Compile JavaScript into a self-contained executable
+mnode --compile hello.js
+```
+
 ## Motivation
 
 Starting with `deno compile`, we've made it easy to distribute JavaScript runtimes and scripts as single executable applications. While similar functionality is possible with Node.js, Bun, or Andromeda, the file sizes are too large for simple CLI tools.\
