@@ -1,3 +1,5 @@
+pub mod encoding;
+pub mod fetch;
 pub mod navigator;
 pub mod url;
 

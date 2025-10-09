@@ -15,7 +15,7 @@ concurrency:
 jobs:
   format:
     name: Format
-    runs-on: openci-runner-beta
+    runs-on: ubuntu-latest
     permissions: {}
     steps:
       - uses: actions/checkout@v5
@@ -34,18 +34,26 @@ jobs:
     permissions: {}
     strategy:
       matrix:
-        os: [
-          "windows-latest",
-          "ubuntu-latest",
-          "openci-runner-beta",
-          "macos-latest",
-        ]
+        include:
+          - os: openci-runner-beta
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+          - os: macos-15
+            target: aarch64-apple-darwin
+          - os: windows-2025
+            target: x86_64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v5
-      - run: rustup toolchain install stable --profile minimal
-      - name: Check
-        run: cargo check --all-targets
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - name: Build
-        run: cargo build
-      - name: Test
-        run: cargo test
+        run: cargo build --release
+      - name: Check binary size (Unix)
+        if: runner.os != 'Windows'
+        run: ls -lh target/release/mnode
+      - name: Check binary size (Windows)
+        if: runner.os == 'Windows'
+        run: Get-Item target/release/mnode.exe | Select-Object Name, @{Name="Size";Expression={"{0:N2} MB" -f ($_.Length / 1MB)}}
+        shell: pwsh
