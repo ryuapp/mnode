@@ -57,6 +57,9 @@ jobs:
       - name: Build
         if: ${{ !matrix.use_bindgen }}
         run: cargo build --release
+      - name: Test (with bindgen)
+        if: matrix.use_bindgen
+        run: cargo test --features rquickjs/bindgen
       - name: Test
         if: ${{ !matrix.use_bindgen }}
         run: cargo test
