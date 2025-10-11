@@ -17,6 +17,24 @@ mnode hello.js
 mnode --compile hello.js
 ```
 
+## Supported Platforms
+
+The tier system does not imply stability, but rather indicates the priority of addressing platform-specific bugs.
+
+### Tier 1
+
+- `x86_64-pc-windows-msvc`
+
+### Tier 2
+
+- `x86_64-unknown-linux-gnu`
+
+### Tier 3
+
+- `aarch64-unknown-linux-gnu`
+- `aarch64-apple-darwin`
+- `aarch64-pc-windows-msvc`
+
 ## Motivation
 
 Starting with `deno compile`, we've made it easy to distribute JavaScript runtimes and scripts as single executable applications. While similar functionality is possible with Node.js, Bun, or Andromeda, the file sizes are too large for simple CLI tools.\
