@@ -1,1 +1,9 @@
+# Rust
 target
+
+# JavaScript
+node_modules
+
+# Astro
+.astro
+dist
