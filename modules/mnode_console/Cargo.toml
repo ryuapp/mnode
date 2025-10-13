@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 rquickjs = { version = "0.9.0", features = ["classes", "properties", "loader"] }
+mnode_utils = { path = "../mnode_utils" }

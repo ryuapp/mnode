@@ -1,5 +1,4 @@
 use clap_lex::RawArgs;
-use rquickjs::function::Func;
 use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
 use std::error::Error;
 use std::fs;
@@ -198,12 +197,6 @@ fn setup_extensions(ctx: &rquickjs::Ctx, _script_path: &str) -> Result<(), Box<d
   globalThis[Symbol.for("mnode.internal")] = {};
 }"#,
     )?;
-
-    // Register __print for console
-    let print_fn = Func::from(|msg: String| {
-        println!("{}", msg);
-    });
-    ctx.globals().set("__print", print_fn)?;
 
     // Build module configuration using default (feature-based)
     let builder = ModuleBuilder::default();

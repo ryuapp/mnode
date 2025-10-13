@@ -86,13 +86,15 @@ function formatValue(arg) {
   }
 }
 
+const print = globalThis[Symbol.for("mnode.internal")].print;
+
 globalThis.console = {
   log(...args) {
     const formatted = args.map(formatValue).join(" ");
-    __print(formatted);
+    print(formatted);
   },
   error(...args) {
     const formatted = args.map(formatValue).join(" ");
-    __print(formatted);
+    print(formatted);
   },
 };
