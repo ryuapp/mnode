@@ -13,7 +13,7 @@ const isFile = fs.statSync("README.md").isFile();
 console.log("README.md is file:", isFile);
 
 // Process API
-console.log("Process argv:", process.argv.length, "arguments");
+console.log("Process argv:", process.argv);
 console.log(Response);
 // Fetch API
 console.log("\nTesting Fetch API...");

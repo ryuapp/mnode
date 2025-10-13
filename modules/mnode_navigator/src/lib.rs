@@ -1,7 +1,12 @@
 use rquickjs::Ctx;
 use std::error::Error;
 
-pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
+pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+    setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+    ctx.eval::<(), _>(include_str!("navigator.js"))
+}
+
+fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     let platform = if cfg!(target_os = "macos") {
         "MacIntel"
     } else if cfg!(windows) {

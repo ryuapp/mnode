@@ -1,5 +1,9 @@
-pub fn load_setup() -> &'static str {
-    include_str!("setup.js")
+use rquickjs::{Ctx, Result};
+
+pub trait ModuleDef {
+    fn init(ctx: &Ctx<'_>) -> Result<()>;
+    fn source() -> &'static str;
+    fn name() -> &'static str;
 }
 
 #[macro_export]

@@ -1,9 +1,14 @@
-use crate::add_internal_function;
+use mnode_utils::add_internal_function;
 use rquickjs::Ctx;
 use std::error::Error;
 use url::Url;
 
-pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
+pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+    setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+    ctx.eval::<(), _>(include_str!("url.js"))
+}
+
+fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     ctx.eval::<(), _>("globalThis[Symbol.for('mnode.internal')].url = {};")?;
 
     add_internal_function!(ctx, "url.parse", |url_str: String,

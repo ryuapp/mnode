@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = [
+members = ["modules/mnode_console", "modules/mnode_encoding", "modules/mnode_fetch", "modules/mnode_fs", "modules/mnode_navigator", "modules/mnode_process", "modules/mnode_url", "modules/mnode_utils",
     "runtime",
 ]
 

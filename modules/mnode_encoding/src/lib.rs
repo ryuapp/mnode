@@ -1,8 +1,13 @@
-use crate::add_internal_function;
+use mnode_utils::add_internal_function;
 use rquickjs::Ctx;
 use std::error::Error;
 
-pub fn setup(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
+pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+    setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+    ctx.eval::<(), _>(include_str!("encoding.js"))
+}
+
+fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     ctx.eval::<(), _>("globalThis[Symbol.for('mnode.internal')].encoding = {};")?;
 
     // btoa: Binary to ASCII (Base64 encode)

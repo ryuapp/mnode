@@ -499,19 +499,92 @@ name = "mnode"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "base64",
- "bytes",
  "clap_lex",
+ "mnode_console",
+ "mnode_encoding",
+ "mnode_fetch",
+ "mnode_fs",
+ "mnode_navigator",
+ "mnode_process",
+ "mnode_url",
+ "mnode_utils",
+ "rquickjs",
+]
+
+[[package]]
+name = "mnode_console"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+]
+
+[[package]]
+name = "mnode_encoding"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "mnode_utils",
+ "rquickjs",
+ "serde_json",
+]
+
+[[package]]
+name = "mnode_fetch"
+version = "0.1.0"
+dependencies = [
+ "bytes",
  "http-body-util",
  "hyper",
  "hyper-util",
+ "mnode_utils",
  "once_cell",
  "rquickjs",
  "serde_json",
  "tokio",
  "tokio-native-tls",
- "url",
+]
+
+[[package]]
+name = "mnode_fs"
+version = "0.1.0"
+dependencies = [
+ "mnode_utils",
+ "rquickjs",
+ "serde_json",
  "windows",
+]
+
+[[package]]
+name = "mnode_navigator"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+]
+
+[[package]]
+name = "mnode_process"
+version = "0.1.0"
+dependencies = [
+ "mnode_utils",
+ "rquickjs",
+ "serde_json",
+]
+
+[[package]]
+name = "mnode_url"
+version = "0.1.0"
+dependencies = [
+ "mnode_utils",
+ "rquickjs",
+ "serde_json",
+ "url",
+]
+
+[[package]]
+name = "mnode_utils"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
 ]
 
 [[package]]

@@ -1,8 +1,30 @@
-use crate::add_internal_function;
+use mnode_utils::{ModuleDef, add_internal_function};
 use rquickjs::Ctx;
 use serde_json::json;
 use std::error::Error;
 use std::fs;
+
+pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+    setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+    Ok(())
+}
+
+pub struct FsModule;
+
+impl ModuleDef for FsModule {
+    fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+        setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+        Ok(())
+    }
+
+    fn name() -> &'static str {
+        "node:fs"
+    }
+
+    fn source() -> &'static str {
+        include_str!("fs.js")
+    }
+}
 
 #[cfg(windows)]
 fn get_windows_file_info(path: &str) -> Result<(u64, u64, u32, u64), String> {
@@ -90,7 +112,7 @@ fn get_blksize(path: &str) -> Result<u64, String> {
     }
 }
 
-pub fn setup(ctx: &Ctx) -> std::result::Result<(), Box<dyn Error>> {
+fn setup_internal(ctx: &Ctx) -> std::result::Result<(), Box<dyn Error>> {
     add_internal_function!(ctx, "readFileSync", |path: String| {
         read_file_sync(path)
             .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e.replace('"', "\\\"")))

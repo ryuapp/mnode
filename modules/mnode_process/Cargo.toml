@@ -1,0 +1,9 @@
+[package]
+name = "mnode_process"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rquickjs = { version = "0.9.0", features = ["classes", "properties", "loader"] }
+serde_json = "1.0.145"
+mnode_utils = { path = "../mnode_utils" }

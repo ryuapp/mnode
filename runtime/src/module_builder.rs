@@ -1,0 +1,149 @@
+use mnode_utils::ModuleDef;
+use rquickjs::loader::{Loader, Resolver};
+use rquickjs::{Ctx, Error, Module, Result};
+use std::collections::HashMap;
+use std::sync::Arc;
+
+pub struct ModuleBuilder {
+    globals: Vec<fn(&Ctx<'_>) -> Result<()>>,
+    module_sources: HashMap<&'static str, fn() -> &'static str>,
+}
+
+impl ModuleBuilder {
+    pub fn new() -> Self {
+        Self {
+            globals: Vec::new(),
+            module_sources: HashMap::new(),
+        }
+    }
+
+    pub fn with_global(mut self, init: fn(&Ctx<'_>) -> Result<()>) -> Self {
+        self.globals.push(init);
+        self
+    }
+
+    pub fn with_module<M: ModuleDef>(mut self) -> Self {
+        self.module_sources.insert(M::name(), M::source);
+        self
+    }
+
+    pub fn build(self) -> (GlobalAttachment, ModuleRegistry) {
+        (
+            GlobalAttachment {
+                globals: self.globals,
+            },
+            ModuleRegistry {
+                module_sources: self.module_sources,
+            },
+        )
+    }
+}
+
+impl Default for ModuleBuilder {
+    fn default() -> Self {
+        let mut builder = Self::new();
+
+        #[cfg(feature = "console")]
+        {
+            builder = builder.with_global(mnode_console::init);
+        }
+        #[cfg(feature = "navigator")]
+        {
+            builder = builder.with_global(mnode_navigator::init);
+        }
+        #[cfg(feature = "url")]
+        {
+            builder = builder.with_global(mnode_url::init);
+        }
+        #[cfg(feature = "encoding")]
+        {
+            builder = builder.with_global(mnode_encoding::init);
+        }
+        #[cfg(feature = "fetch")]
+        {
+            builder = builder.with_global(mnode_fetch::init);
+        }
+        #[cfg(feature = "fs")]
+        {
+            builder = builder
+                .with_global(mnode_fs::FsModule::init)
+                .with_module::<mnode_fs::FsModule>();
+        }
+        #[cfg(feature = "process")]
+        {
+            builder = builder
+                .with_global(mnode_process::ProcessModule::init)
+                .with_module::<mnode_process::ProcessModule>();
+        }
+
+        builder
+    }
+}
+
+pub struct GlobalAttachment {
+    globals: Vec<fn(&Ctx<'_>) -> Result<()>>,
+}
+
+impl GlobalAttachment {
+    pub fn attach(&self, ctx: &Ctx<'_>) -> Result<()> {
+        for init in &self.globals {
+            init(ctx)?;
+        }
+        Ok(())
+    }
+}
+
+pub struct ModuleRegistry {
+    module_sources: HashMap<&'static str, fn() -> &'static str>,
+}
+
+impl ModuleRegistry {
+    pub fn get_source(&self, name: &str) -> Option<&'static str> {
+        self.module_sources.get(name).map(|f| f())
+    }
+
+    pub fn has_module(&self, name: &str) -> bool {
+        self.module_sources.contains_key(name)
+    }
+}
+
+pub struct NodeResolver {
+    registry: Arc<ModuleRegistry>,
+}
+
+impl NodeResolver {
+    pub fn new(registry: Arc<ModuleRegistry>) -> Self {
+        Self { registry }
+    }
+}
+
+impl Resolver for NodeResolver {
+    fn resolve(&mut self, _ctx: &Ctx, _base: &str, name: &str) -> Result<String> {
+        if self.registry.has_module(name) {
+            Ok(name.to_string())
+        } else {
+            Err(Error::new_resolving(name, "Unknown node module"))
+        }
+    }
+}
+
+pub struct NodeLoader {
+    registry: Arc<ModuleRegistry>,
+}
+
+impl NodeLoader {
+    pub fn new(registry: Arc<ModuleRegistry>) -> Self {
+        Self { registry }
+    }
+}
+
+impl Loader for NodeLoader {
+    fn load<'js>(&mut self, ctx: &Ctx<'js>, name: &str) -> Result<Module<'js>> {
+        let source = self
+            .registry
+            .get_source(name)
+            .ok_or_else(|| Error::new_loading(name))?;
+
+        Module::declare(ctx.clone(), name, source)
+    }
+}

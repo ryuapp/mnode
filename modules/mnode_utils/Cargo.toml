@@ -1,0 +1,7 @@
+[package]
+name = "mnode_utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rquickjs = { version = "0.9.0", features = ["classes", "properties", "loader"] }

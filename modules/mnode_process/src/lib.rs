@@ -1,13 +1,31 @@
-use crate::add_internal_function;
+use mnode_utils::{ModuleDef, add_internal_function};
 use rquickjs::Ctx;
 use std::error::Error;
-use std::sync::OnceLock;
+use std::path::Path;
 
-static SCRIPT_PATH: OnceLock<String> = OnceLock::new();
+pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+    setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+    Ok(())
+}
 
-pub fn setup(ctx: &Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
-    SCRIPT_PATH.get_or_init(|| script_path.to_string());
+pub struct ProcessModule;
 
+impl ModuleDef for ProcessModule {
+    fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+        setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
+        Ok(())
+    }
+
+    fn name() -> &'static str {
+        "node:process"
+    }
+
+    fn source() -> &'static str {
+        include_str!("process.js")
+    }
+}
+
+fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
     add_internal_function!(ctx, "getEnv", || get_env().unwrap_or_else(|e| e));
     add_internal_function!(ctx, "getArgv", || get_argv().unwrap_or_else(|e| e));
     add_internal_function!(ctx, "exit", |code: i32| exit(code).unwrap_or(0));
@@ -30,13 +48,15 @@ pub fn get_argv() -> Result<String, String> {
         }
     }
 
-    // Replace argv[1] with the absolute script path if available
-    if let Some(script_path) = SCRIPT_PATH.get() {
+    // Convert argv[1] (script path) to absolute canonical path
+    if let Some(script_path) = args.get_mut(1) {
         if !script_path.is_empty() {
-            if args.len() > 1 {
-                args[1] = script_path.clone();
-            } else {
-                args.push(script_path.clone());
+            if let Ok(canonical) = Path::new(script_path).canonicalize() {
+                let path_str = canonical.display().to_string();
+                *script_path = path_str
+                    .strip_prefix(r"\\?\")
+                    .unwrap_or(&path_str)
+                    .to_string();
             }
         }
     }

@@ -5,9 +5,7 @@ use std::error::Error;
 use std::fs;
 use std::io::{Read, Write};
 
-mod ext;
-mod internal;
-mod node;
+mod module_builder;
 
 const MAGIC_MARKER: &[u8] = b"__JS_CODE_START__";
 const MAGIC_END: &[u8] = b"__JS_CODE_END__";
@@ -81,10 +79,20 @@ fn run_js_code(js_code: &str) -> Result<(), Box<dyn Error>> {
 }
 
 fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn Error>> {
+    use module_builder::ModuleBuilder;
+    use std::sync::Arc;
+
     let runtime = Runtime::new()?;
 
+    // Build module configuration
+    let (_global_attachment, module_registry) = ModuleBuilder::default().build();
+    let registry = Arc::new(module_registry);
+
     // Set module loader before creating context
-    runtime.set_loader(node::NodeResolver, node::NodeLoader);
+    runtime.set_loader(
+        module_builder::NodeResolver::new(registry.clone()),
+        module_builder::NodeLoader::new(registry.clone()),
+    );
 
     let context = Context::full(&runtime)?;
 
@@ -181,8 +189,15 @@ fn find_pattern(data: &[u8], pattern: &[u8]) -> Option<usize> {
         .rposition(|window| window == pattern)
 }
 
-fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dyn Error>> {
-    ctx.eval::<(), _>(internal::load_setup())?;
+fn setup_extensions(ctx: &rquickjs::Ctx, _script_path: &str) -> Result<(), Box<dyn Error>> {
+    use module_builder::ModuleBuilder;
+
+    // Initialize mnode.internal object
+    ctx.eval::<(), _>(
+        r#"if (!globalThis[Symbol.for("mnode.internal")]) {
+  globalThis[Symbol.for("mnode.internal")] = {};
+}"#,
+    )?;
 
     // Register __print for console
     let print_fn = Func::from(|msg: String| {
@@ -190,31 +205,10 @@ fn setup_extensions(ctx: &rquickjs::Ctx, script_path: &str) -> Result<(), Box<dy
     });
     ctx.globals().set("__print", print_fn)?;
 
-    // Navigator
-    ext::navigator::setup(ctx)?;
-    ctx.eval::<(), _>(ext::load_navigator())?;
-
-    // URL
-    ext::url::setup(ctx)?;
-    ctx.eval::<(), _>(ext::load_url())?;
-
-    // Console
-    ctx.eval::<(), _>(ext::load_console())?;
-
-    // Encoding (btoa, atob, TextEncoder, TextDecoder)
-    ext::encoding::lib::setup(ctx)?;
-    ctx.eval::<(), _>(ext::encoding::load_encoding())?;
-
-    // Fetch
-    ext::fetch::setup(ctx)?;
-    ctx.eval::<(), _>(ext::load_fetch())?;
-
-    // Node.js modules
-    node::fs::setup(ctx)?;
-    node::process::setup(ctx, script_path)?;
-
-    // Global process
-    ctx.eval::<(), _>("globalThis.process = { env: JSON.parse(globalThis[Symbol.for('mnode.internal')].getEnv()), argv: JSON.parse(globalThis[Symbol.for('mnode.internal')].getArgv()), exit: (code = 0) => globalThis[Symbol.for('mnode.internal')].exit(code) };")?;
+    // Build module configuration using default (feature-based)
+    let builder = ModuleBuilder::default();
+    let (global_attachment, _module_registry) = builder.build();
+    global_attachment.attach(ctx)?;
 
     Ok(())
 }
