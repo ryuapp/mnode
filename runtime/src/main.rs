@@ -160,7 +160,7 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
     #[cfg(target_os = "macos")]
     {
         use libsui::Macho;
-        Macho::from(&exe_bytes)?
+        Macho::from(exe_bytes)?
             .write_section(SECTION_NAME, js_code.as_bytes().to_vec())?
             .build(&mut output_file)?;
     }
@@ -168,9 +168,8 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
     #[cfg(target_os = "linux")]
     {
         use libsui::Elf;
-        Elf::from(&exe_bytes)?
-            .write_section(SECTION_NAME, js_code.as_bytes().to_vec())?
-            .build(&mut output_file)?;
+        let elf = Elf::new(&exe_bytes);
+        elf.append(SECTION_NAME, js_code.as_bytes(), &mut output_file)?;
     }
 
     let file_size = fs::metadata(&output_exe)?.len();
