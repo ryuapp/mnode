@@ -2,12 +2,10 @@ use clap_lex::RawArgs;
 use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
 use std::error::Error;
 use std::fs;
-use std::io::{Read, Write};
 
 mod module_builder;
 
-const MAGIC_MARKER: &[u8] = b"__JS_CODE_START__";
-const MAGIC_END: &[u8] = b"__JS_CODE_END__";
+const SECTION_NAME: &str = "mnode_js";
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if this executable has embedded JavaScript code and no arguments
@@ -139,6 +137,7 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
 
     // Get current executable path
     let current_exe = std::env::current_exe()?;
+    let exe_bytes = fs::read(&current_exe)?;
 
     // Output executable name
     let output_exe = if cfg!(windows) {
@@ -147,15 +146,32 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
         output_name.to_string()
     };
 
-    // Copy current executable
-    fs::copy(&current_exe, &output_exe)?;
+    // Use libsui to embed JavaScript code
+    let mut output_file = fs::File::create(&output_exe)?;
 
-    // Append JavaScript code with markers
-    let mut output_file = fs::OpenOptions::new().append(true).open(&output_exe)?;
+    #[cfg(target_os = "windows")]
+    {
+        use libsui::PortableExecutable;
+        PortableExecutable::from(&exe_bytes)?
+            .write_resource(SECTION_NAME, js_code.as_bytes().to_vec())?
+            .build(&mut output_file)?;
+    }
 
-    output_file.write_all(MAGIC_MARKER)?;
-    output_file.write_all(js_code.as_bytes())?;
-    output_file.write_all(MAGIC_END)?;
+    #[cfg(target_os = "macos")]
+    {
+        use libsui::Macho;
+        Macho::from(&exe_bytes)?
+            .write_section(SECTION_NAME, js_code.as_bytes().to_vec())?
+            .build(&mut output_file)?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use libsui::Elf;
+        Elf::from(&exe_bytes)?
+            .write_section(SECTION_NAME, js_code.as_bytes().to_vec())?
+            .build(&mut output_file)?;
+    }
 
     let file_size = fs::metadata(&output_exe)?.len();
     let size_mb = file_size as f64 / 1024.0 / 1024.0;
@@ -167,25 +183,12 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
 }
 
 fn extract_embedded_js() -> Result<String, Box<dyn Error>> {
-    let exe_path = std::env::current_exe()?;
-    let mut file = fs::File::open(&exe_path)?;
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
+    let data = libsui::find_section(SECTION_NAME)?.ok_or("No embedded JavaScript found")?;
 
-    if let Some(start_pos) = find_pattern(&buffer, MAGIC_MARKER) {
-        let code_start = start_pos + MAGIC_MARKER.len();
-        if let Some(end_pos) = find_pattern(&buffer[code_start..], MAGIC_END) {
-            let js_code = &buffer[code_start..code_start + end_pos];
-            return Ok(String::from_utf8_lossy(js_code).to_string());
-        }
-    }
+    let js_code = String::from_utf8(data.to_vec())
+        .map_err(|e| format!("Invalid UTF-8 in embedded JS: {}", e))?;
 
-    Err("No embedded JavaScript found".into())
-}
-
-fn find_pattern(data: &[u8], pattern: &[u8]) -> Option<usize> {
-    data.windows(pattern.len())
-        .rposition(|window| window == pattern)
+    Ok(js_code)
 }
 
 fn setup_extensions(ctx: &rquickjs::Ctx, _script_path: &str) -> Result<(), Box<dyn Error>> {

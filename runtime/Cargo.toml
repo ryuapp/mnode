@@ -16,6 +16,7 @@ process = ["dep:mnode_process"]
 [dependencies]
 anyhow = "1.0.100"
 clap_lex = "0.7.5"
+libsui = "0.10.0"
 rquickjs = { version = "0.9.0", features = ["classes", "properties", "loader"] }
 mnode_utils = { path = "../modules/mnode_utils" }
 
