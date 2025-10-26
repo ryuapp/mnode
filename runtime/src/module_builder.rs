@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct ModuleBuilder {
-    globals: Vec<fn(&Ctx<'_>) -> Result<()>>,
+    globals: Vec<Box<dyn Fn(&Ctx<'_>) -> Result<()>>>,
     module_sources: HashMap<&'static str, fn() -> &'static str>,
 }
 
@@ -18,7 +18,7 @@ impl ModuleBuilder {
     }
 
     pub fn with_global(mut self, init: fn(&Ctx<'_>) -> Result<()>) -> Self {
-        self.globals.push(init);
+        self.globals.push(Box::new(init));
         self
     }
 
@@ -81,7 +81,7 @@ impl Default for ModuleBuilder {
 }
 
 pub struct GlobalAttachment {
-    globals: Vec<fn(&Ctx<'_>) -> Result<()>>,
+    globals: Vec<Box<dyn Fn(&Ctx<'_>) -> Result<()>>>,
 }
 
 impl GlobalAttachment {
