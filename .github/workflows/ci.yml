@@ -52,6 +52,9 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Setup musl-tools
+        if: endsWith(matrix.target, '-musl')
+        run: sudo apt-get update -y && sudo apt-get install -y musl-tools
       - name: Add target
         run: rustup target add ${{ matrix.target }}
       - name: Build (with bindgen)
