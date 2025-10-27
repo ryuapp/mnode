@@ -52,9 +52,9 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Setup musl-tools
+      - name: Setup musl-tools and OpenSSL
         if: endsWith(matrix.target, '-musl')
-        run: sudo apt-get update -y && sudo apt-get install -y musl-tools
+        run: sudo apt-get update -y && sudo apt-get install -y musl-tools libssl-dev pkg-config
       - name: Add target
         run: rustup target add ${{ matrix.target }}
       - name: Build (with bindgen)
