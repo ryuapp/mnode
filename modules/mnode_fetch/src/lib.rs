@@ -300,7 +300,7 @@ mod tls {
             .with_no_client_auth();
 
         let connector = tokio_rustls::TlsConnector::from(Arc::new(config));
-        let server_name = rustls::pki_types::ServerName::try_from(host)
+        let server_name = rustls::pki_types::ServerName::try_from(host.to_string())
             .map_err(|e| format!("Invalid server name: {}", e))?;
 
         let tls_stream = connector
