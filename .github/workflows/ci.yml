@@ -73,8 +73,9 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p sizes
-          SIZE=$(ls -lh target/${{ matrix.target }}/release/mnode | awk '{print $5}')
-          echo "{\"target\": \"${{ matrix.target }}\", \"size\": \"$SIZE\"}" > sizes/${{ matrix.target }}.json
+          SIZE_B=$(stat -c%s target/${{ matrix.target }}/release/mnode 2>/dev/null || stat -f%z target/${{ matrix.target }}/release/mnode)
+          SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $SIZE_B / 1024 / 1024}")
+          echo "{\"target\": \"${{ matrix.target }}\", \"size\": \"$SIZE_MB MB\"}" > sizes/${{ matrix.target }}.json
           cat sizes/${{ matrix.target }}.json
       - name: Collect binary size (Windows)
         if: runner.os == 'Windows'
