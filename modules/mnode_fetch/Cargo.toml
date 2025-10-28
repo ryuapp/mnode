@@ -23,8 +23,5 @@ default = ["native-tls"]
 native-tls = ["tokio-native-tls"]
 rustls = ["tokio-rustls", "dep:rustls", "webpki-roots"]
 
-[target.'cfg(all(target_os = "linux", target_env = "musl"))'.dependencies]
-openssl-sys = { version = "0.9.109", features = ["vendored"] }
-
 [target.'cfg(all(target_os = "linux", target_env = "musl"))'.features]
 default = ["rustls"]
