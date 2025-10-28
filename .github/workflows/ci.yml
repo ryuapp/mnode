@@ -61,8 +61,16 @@ jobs:
       - name: Add target
         run: rustup target add ${{ matrix.target }}
       - name: Build
+        if: endsWith(matrix.target, '-musl')
+        run: cargo build --release --target ${{ matrix.target }} -p mnode_fetch --features rustls --no-default-features && cargo build --release --target ${{ matrix.target }} --exclude mnode_fetch
+      - name: Build
+        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo build --release --target ${{ matrix.target }}
       - name: Test
+        if: endsWith(matrix.target, '-musl')
+        run: cargo test --target ${{ matrix.target }} -p mnode_fetch --features rustls --no-default-features && cargo test --target ${{ matrix.target }} --exclude mnode_fetch
+      - name: Test
+        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo test --target ${{ matrix.target }}
       - name: Collect binary size (Unix)
         if: runner.os != 'Windows'
