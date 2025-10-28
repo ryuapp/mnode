@@ -21,6 +21,3 @@ mnode_utils = { path = "../mnode_utils" }
 default = ["native-tls"]
 native-tls = ["tokio-native-tls"]
 rustls = ["tokio-rustls", "webpki-roots"]
-
-[target.'cfg(all(target_os = "linux", target_env = "musl"))'.features]
-default = ["rustls"]
