@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: denoland/setup-deno@v2
+        with:
+          cache: true
       - uses: Swatinem/rust-cache@v2
       - name: Check formatting
         run: deno task check:format
