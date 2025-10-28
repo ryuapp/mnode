@@ -51,23 +51,16 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Cache musl tools
+        if: endsWith(matrix.target, '-musl')
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: musl-tools pkg-config
       - name: Add target
-        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: rustup target add ${{ matrix.target }}
-      - name: Build Docker image for musl
-        if: endsWith(matrix.target, '-musl')
-        run: docker build -f Dockerfile.musl -t mnode-musl:latest .
-      - name: Build with muslrust
-        if: endsWith(matrix.target, '-musl')
-        run: docker run -v $PWD:/volume --rm -t mnode-musl:latest sh -c "rustup target add ${{ matrix.target }} && cargo build --release --target ${{ matrix.target }}"
       - name: Build
-        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo build --release --target ${{ matrix.target }}
-      - name: Test with muslrust
-        if: endsWith(matrix.target, '-musl')
-        run: docker run -v $PWD:/volume --rm -t mnode-musl:latest sh -c "rustup target add ${{ matrix.target }} && cargo test --target ${{ matrix.target }}"
       - name: Test
-        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo test --target ${{ matrix.target }}
       - name: Collect binary size (Unix)
         if: runner.os != 'Windows'
