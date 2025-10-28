@@ -62,13 +62,13 @@ jobs:
         run: rustup target add ${{ matrix.target }}
       - name: Build (musl)
         if: endsWith(matrix.target, '-musl')
-        run: cargo build --release --target ${{ matrix.target }} -p mnode_fetch --features rustls --no-default-features && cargo build --release --target ${{ matrix.target }} --workspace --exclude mnode_fetch
+        run: cargo build --release --target ${{ matrix.target }} -p mnode_fetch --features rustls --no-default-features && cargo build --release --target ${{ matrix.target }} --workspace --exclude mnode_fetch --exclude mnode && cargo build --release --target ${{ matrix.target }} -p mnode
       - name: Build
         if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo build --release --target ${{ matrix.target }}
       - name: Test (musl)
         if: endsWith(matrix.target, '-musl')
-        run: cargo test --target ${{ matrix.target }} -p mnode_fetch --features rustls --no-default-features && cargo test --target ${{ matrix.target }} --workspace --exclude mnode_fetch
+        run: cargo test --target ${{ matrix.target }} -p mnode_fetch --features rustls --no-default-features && cargo test --target ${{ matrix.target }} --workspace --exclude mnode_fetch --exclude mnode && cargo test --target ${{ matrix.target }} -p mnode
       - name: Test
         if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo test --target ${{ matrix.target }}
