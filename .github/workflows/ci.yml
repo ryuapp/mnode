@@ -60,10 +60,18 @@ jobs:
           packages: musl-tools pkg-config
       - name: Add target
         run: rustup target add ${{ matrix.target }}
+      - name: Build (musl with rustls)
+        if: endsWith(matrix.target, '-musl')
+        run: cargo build --release --target ${{ matrix.target }} --features fetch-rustls --no-default-features --features console,navigator,url,encoding,fs,process,fetch-rustls
       - name: Build
+        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo build --release --target ${{ matrix.target }}
+      - name: Test (musl with rustls)
+        if: endsWith(matrix.target, '-musl')
+        run: cargo test --release --target ${{ matrix.target }} --features fetch-rustls --no-default-features --features console,navigator,url,encoding,fs,process,fetch-rustls
       - name: Test
-        run: cargo test --target ${{ matrix.target }}
+        if: ${{ !endsWith(matrix.target, '-musl') }}
+        run: cargo test --release --target ${{ matrix.target }}
       - name: Collect binary size (Unix)
         if: runner.os != 'Windows'
         run: |

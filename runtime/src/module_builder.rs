@@ -59,7 +59,7 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(mnode_encoding::init);
         }
-        #[cfg(feature = "fetch")]
+        #[cfg(any(feature = "fetch", feature = "fetch-rustls"))]
         {
             builder = builder.with_global(mnode_fetch::init);
         }
