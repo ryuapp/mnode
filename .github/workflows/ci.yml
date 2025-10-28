@@ -52,28 +52,23 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Setup musl-tools and OpenSSL
-        if: endsWith(matrix.target, '-musl')
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y musl-tools libssl-dev pkg-config
-          # Setup OpenSSL for musl cross-compilation
-          OPENSSL_DIR=/usr/lib/ssl
-          echo "OPENSSL_DIR=$OPENSSL_DIR" >> $GITHUB_ENV
-          echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
       - name: Add target
+        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: rustup target add ${{ matrix.target }}
-      - name: Build (with bindgen)
-        if: matrix.use_bindgen
-        run: cargo build --release --target ${{ matrix.target }} --features rquickjs/bindgen
+      - name: Build Docker image for musl
+        if: endsWith(matrix.target, '-musl')
+        run: docker build -f Dockerfile.musl -t mnode-musl:latest .
+      - name: Build with muslrust
+        if: endsWith(matrix.target, '-musl')
+        run: docker run -v $PWD:/volume --rm -t mnode-musl:latest sh -c "rustup target add ${{ matrix.target }} && cargo build --release --target ${{ matrix.target }}"
       - name: Build
-        if: ${{ !matrix.use_bindgen }}
+        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo build --release --target ${{ matrix.target }}
-      - name: Test (with bindgen)
-        if: matrix.use_bindgen
-        run: cargo test --target ${{ matrix.target }} --features rquickjs/bindgen
+      - name: Test with muslrust
+        if: endsWith(matrix.target, '-musl')
+        run: docker run -v $PWD:/volume --rm -t mnode-musl:latest sh -c "rustup target add ${{ matrix.target }} && cargo test --target ${{ matrix.target }}"
       - name: Test
-        if: ${{ !matrix.use_bindgen }}
+        if: ${{ !endsWith(matrix.target, '-musl') }}
         run: cargo test --target ${{ matrix.target }}
       - name: Check binary size (Unix)
         if: runner.os != 'Windows'
