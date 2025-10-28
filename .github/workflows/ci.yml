@@ -34,8 +34,12 @@ jobs:
         include:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-gnu
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
           - os: macos-15
             target: aarch64-apple-darwin
           - os: windows-2025
@@ -48,22 +52,28 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Build (with bindgen)
-        if: matrix.use_bindgen
-        run: cargo build --release --features rquickjs/bindgen
+      - name: Add target
+        if: ${{ !endsWith(matrix.target, '-musl') }}
+        run: rustup target add ${{ matrix.target }}
+      - name: Build Docker image for musl
+        if: endsWith(matrix.target, '-musl')
+        run: docker build -f Dockerfile.musl -t mnode-musl:latest .
+      - name: Build with muslrust
+        if: endsWith(matrix.target, '-musl')
+        run: docker run -v $PWD:/volume --rm -t mnode-musl:latest sh -c "rustup target add ${{ matrix.target }} && cargo build --release --target ${{ matrix.target }}"
       - name: Build
-        if: ${{ !matrix.use_bindgen }}
-        run: cargo build --release
-      - name: Test (with bindgen)
-        if: matrix.use_bindgen
-        run: cargo test --features rquickjs/bindgen
+        if: ${{ !endsWith(matrix.target, '-musl') }}
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Test with muslrust
+        if: endsWith(matrix.target, '-musl')
+        run: docker run -v $PWD:/volume --rm -t mnode-musl:latest sh -c "rustup target add ${{ matrix.target }} && cargo test --target ${{ matrix.target }}"
       - name: Test
-        if: ${{ !matrix.use_bindgen }}
-        run: cargo test
+        if: ${{ !endsWith(matrix.target, '-musl') }}
+        run: cargo test --target ${{ matrix.target }}
       - name: Check binary size (Unix)
         if: runner.os != 'Windows'
-        run: ls -lh target/release/mnode
+        run: ls -lh target/${{ matrix.target }}/release/mnode
       - name: Check binary size (Windows)
         if: runner.os == 'Windows'
-        run: Get-Item target/release/mnode.exe | Select-Object Name, @{Name="Size";Expression={"{0:N2} MB" -f ($_.Length / 1MB)}}
+        run: Get-Item target/${{ matrix.target }}/release/mnode.exe | Select-Object Name, @{Name="Size";Expression={"{0:N2} MB" -f ($_.Length / 1MB)}}
         shell: pwsh
