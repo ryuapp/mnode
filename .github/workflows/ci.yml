@@ -115,12 +115,15 @@ jobs:
           echo "| Target | Size |" >> sizes_report.md
           echo "|--------|------|" >> sizes_report.md
 
-          for dir in all-sizes/binary-sizes-*/; do
-            for json_file in "$dir"*.json; do
+          # Collect and sort by OS: Linux, Apple, Windows
+          for pattern in "linux" "apple" "windows"; do
+            for json_file in all-sizes/binary-sizes-*/*.json; do
               if [ -f "$json_file" ]; then
                 TARGET=$(jq -r '.target' "$json_file")
-                SIZE=$(jq -r '.size' "$json_file")
-                echo "| $TARGET | $SIZE |" >> sizes_report.md
+                if [[ "$TARGET" == *"$pattern"* ]]; then
+                  SIZE=$(jq -r '.size' "$json_file")
+                  echo "| $TARGET | $SIZE |" >> sizes_report.md
+                fi
               fi
             done
           done
