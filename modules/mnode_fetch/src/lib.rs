@@ -285,6 +285,7 @@ mod tls {
 
     pub async fn create_tls_stream(host: &str, port: u16) -> Result<IoStream, String> {
         use tokio::net::TcpStream;
+        use tokio_rustls::rustls;
 
         let stream = TcpStream::connect(format!("{}:{}", host, port))
             .await
