@@ -1,18 +1,16 @@
 [package]
-name = "mnode"
+name = "mdeno"
 version = "0.1.0"
 edition = "2024"
 
 [features]
-default = ["console", "navigator", "url", "encoding", "fetch", "fs", "process"]
+default = ["console", "navigator", "url", "encoding", "fetch"]
 console = ["dep:web_console"]
 navigator = ["dep:web_navigator"]
 url = ["dep:web_url"]
 encoding = ["dep:web_encoding"]
 fetch = ["dep:web_fetch", "web_fetch?/native-tls"]
 fetch-rustls = ["dep:web_fetch", "web_fetch?/rustls"]
-fs = ["dep:node_fs"]
-process = ["dep:node_process"]
 
 [dependencies]
 anyhow = "1.0.100"
@@ -27,5 +25,3 @@ web_encoding = { path = "../modules/web_encoding", optional = true }
 web_fetch = { path = "../modules/web_fetch", optional = true, default-features = false }
 web_navigator = { path = "../modules/web_navigator", optional = true }
 web_url = { path = "../modules/web_url", optional = true }
-node_fs = { path = "../modules/node_fs", optional = true }
-node_process = { path = "../modules/node_process", optional = true }

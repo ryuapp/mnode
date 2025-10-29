@@ -1,3 +1,3 @@
-# mnode
+# mdeno
 
 Runtime and CLI.

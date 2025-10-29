@@ -1,8 +1,8 @@
-use utils::ModuleDef;
 use rquickjs::loader::{Loader, Resolver};
 use rquickjs::{Ctx, Error, Module, Result};
 use std::collections::HashMap;
 use std::sync::Arc;
+use utils::ModuleDef;
 
 pub struct ModuleBuilder {
     globals: Vec<Box<dyn Fn(&Ctx<'_>) -> Result<()>>>,
@@ -63,19 +63,6 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(web_fetch::init);
         }
-        #[cfg(feature = "fs")]
-        {
-            builder = builder
-                .with_global(node_fs::FsModule::init)
-                .with_module::<node_fs::FsModule>();
-        }
-        #[cfg(feature = "process")]
-        {
-            builder = builder
-                .with_global(node_process::ProcessModule::init)
-                .with_module::<node_process::ProcessModule>();
-        }
-
         builder
     }
 }

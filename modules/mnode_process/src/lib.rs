@@ -1,7 +1,7 @@
+use mdeno_utils::{ModuleDef, add_internal_function};
 use rquickjs::Ctx;
 use std::error::Error;
 use std::path::Path;
-use utils::{ModuleDef, add_internal_function};
 
 pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
     setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;

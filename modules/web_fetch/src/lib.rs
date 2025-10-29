@@ -1,8 +1,8 @@
-use utils::add_internal_function;
 use rquickjs::Ctx;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
+use utils::add_internal_function;
 
 pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
     setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
@@ -32,7 +32,7 @@ static FETCH_STATE: once_cell::sync::Lazy<Mutex<FetchState>> = once_cell::sync::
 });
 
 fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
-    ctx.eval::<(), _>("globalThis[Symbol.for('mnode.internal')].fetch = {};")?;
+    ctx.eval::<(), _>("globalThis[Symbol.for('mdeno.internal')].fetch = {};")?;
 
     add_internal_function!(ctx, "fetch.start", |url: String,
                                                 method: String,
@@ -106,7 +106,7 @@ async fn fetch_request(
         .method(method.as_str())
         .uri(&uri)
         .header("Host", host_header)
-        .header("User-Agent", "mnode/0.1")
+        .header("User-Agent", "mdeno/0.1")
         .body(http_body_util::Empty::<bytes::Bytes>::new())
         .map_err(|e| format!("Failed to build request: {}", e))?;
 

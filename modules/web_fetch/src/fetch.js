@@ -119,7 +119,7 @@ async function fetch(url, options = {}) {
   const headersJson = JSON.stringify(headersObj);
 
   // Start async fetch
-  const internal = globalThis[Symbol.for("mnode.internal")];
+  const internal = globalThis[Symbol.for("mdeno.internal")];
   const taskId = internal.fetch.start(
     String(url),
     method,
