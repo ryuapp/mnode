@@ -676,94 +676,15 @@ dependencies = [
  "anyhow",
  "clap_lex",
  "libsui",
- "mnode_console",
- "mnode_encoding",
- "mnode_fetch",
- "mnode_fs",
- "mnode_navigator",
- "mnode_process",
- "mnode_url",
- "mnode_utils",
+ "node_fs",
+ "node_process",
  "rquickjs",
-]
-
-[[package]]
-name = "mnode_console"
-version = "0.1.0"
-dependencies = [
- "mnode_utils",
- "rquickjs",
-]
-
-[[package]]
-name = "mnode_encoding"
-version = "0.1.0"
-dependencies = [
- "base64",
- "mnode_utils",
- "rquickjs",
- "serde_json",
-]
-
-[[package]]
-name = "mnode_fetch"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "http-body-util",
- "hyper",
- "hyper-util",
- "mnode_utils",
- "once_cell",
- "rquickjs",
- "serde_json",
- "tokio",
- "tokio-native-tls",
- "tokio-rustls",
- "webpki-roots",
-]
-
-[[package]]
-name = "mnode_fs"
-version = "0.1.0"
-dependencies = [
- "mnode_utils",
- "rquickjs",
- "serde_json",
- "windows",
-]
-
-[[package]]
-name = "mnode_navigator"
-version = "0.1.0"
-dependencies = [
- "rquickjs",
-]
-
-[[package]]
-name = "mnode_process"
-version = "0.1.0"
-dependencies = [
- "mnode_utils",
- "rquickjs",
- "serde_json",
-]
-
-[[package]]
-name = "mnode_url"
-version = "0.1.0"
-dependencies = [
- "mnode_utils",
- "rquickjs",
- "serde_json",
- "url",
-]
-
-[[package]]
-name = "mnode_utils"
-version = "0.1.0"
-dependencies = [
- "rquickjs",
+ "utils",
+ "web_console",
+ "web_encoding",
+ "web_fetch",
+ "web_navigator",
+ "web_url",
 ]
 
 [[package]]
@@ -791,6 +712,25 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "node_fs"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+ "serde_json",
+ "utils",
+ "windows",
+]
+
+[[package]]
+name = "node_process"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+ "serde_json",
+ "utils",
 ]
 
 [[package]]
@@ -1361,6 +1301,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
+name = "utils"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+]
+
+[[package]]
 name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1403,6 +1350,59 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0562428422c63773dad2c345a1882263bbf4d65cf3f42e90921f787ef5ad58e7"
 dependencies = [
  "wit-bindgen",
+]
+
+[[package]]
+name = "web_console"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+ "utils",
+]
+
+[[package]]
+name = "web_encoding"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "rquickjs",
+ "serde_json",
+ "utils",
+]
+
+[[package]]
+name = "web_fetch"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "once_cell",
+ "rquickjs",
+ "serde_json",
+ "tokio",
+ "tokio-native-tls",
+ "tokio-rustls",
+ "utils",
+ "webpki-roots",
+]
+
+[[package]]
+name = "web_navigator"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+]
+
+[[package]]
+name = "web_url"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+ "serde_json",
+ "url",
+ "utils",
 ]
 
 [[package]]

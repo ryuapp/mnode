@@ -1,4 +1,4 @@
-use mnode_utils::add_internal_function;
+use utils::add_internal_function;
 use rquickjs::{Ctx, Result};
 
 pub fn init(ctx: &Ctx<'_>) -> Result<()> {

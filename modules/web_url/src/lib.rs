@@ -1,4 +1,4 @@
-use mnode_utils::add_internal_function;
+use utils::add_internal_function;
 use rquickjs::Ctx;
 use std::error::Error;
 use url::Url;

@@ -1,7 +1,10 @@
 [package]
-name = "mnode_utils"
+name = "web_encoding"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
+base64 = "0.22.1"
+serde_json = "1.0.145"
+utils = { path = "../utils" }

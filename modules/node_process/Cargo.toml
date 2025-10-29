@@ -1,8 +1,9 @@
 [package]
-name = "mnode_console"
+name = "node_process"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
-mnode_utils = { path = "../mnode_utils" }
+serde_json = "1.0.145"
+utils = { path = "../utils" }

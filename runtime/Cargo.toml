@@ -5,28 +5,27 @@ edition = "2024"
 
 [features]
 default = ["console", "navigator", "url", "encoding", "fetch", "fs", "process"]
-console = ["dep:mnode_console"]
-navigator = ["dep:mnode_navigator"]
-url = ["dep:mnode_url"]
-encoding = ["dep:mnode_encoding"]
-fetch = ["dep:mnode_fetch", "mnode_fetch?/native-tls"]
-fetch-rustls = ["dep:mnode_fetch", "mnode_fetch?/rustls"]
-fs = ["dep:mnode_fs"]
-process = ["dep:mnode_process"]
+console = ["dep:web_console"]
+navigator = ["dep:web_navigator"]
+url = ["dep:web_url"]
+encoding = ["dep:web_encoding"]
+fetch = ["dep:web_fetch", "web_fetch?/native-tls"]
+fetch-rustls = ["dep:web_fetch", "web_fetch?/rustls"]
+fs = ["dep:node_fs"]
+process = ["dep:node_process"]
 
 [dependencies]
 anyhow = "1.0.100"
 clap_lex = "0.7.5"
 libsui = "0.10.0"
 rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
-mnode_utils = { path = "../modules/mnode_utils" }
+utils = { path = "../modules/utils" }
 
 # Modules
-mnode_console = { path = "../modules/mnode_console", optional = true }
-mnode_encoding = { path = "../modules/mnode_encoding", optional = true }
-mnode_fetch = { path = "../modules/mnode_fetch", optional = true }
-mnode_navigator = { path = "../modules/mnode_navigator", optional = true }
-mnode_url = { path = "../modules/mnode_url", optional = true }
-mnode_fs = { path = "../modules/mnode_fs", optional = true }
-mnode_process = { path = "../modules/mnode_process", optional = true }
-
+web_console = { path = "../modules/web_console", optional = true }
+web_encoding = { path = "../modules/web_encoding", optional = true }
+web_fetch = { path = "../modules/web_fetch", optional = true, default-features = false }
+web_navigator = { path = "../modules/web_navigator", optional = true }
+web_url = { path = "../modules/web_url", optional = true }
+node_fs = { path = "../modules/node_fs", optional = true }
+node_process = { path = "../modules/node_process", optional = true }

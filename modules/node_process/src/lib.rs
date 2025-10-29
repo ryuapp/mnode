@@ -1,4 +1,4 @@
-use mnode_utils::{ModuleDef, add_internal_function};
+use utils::{ModuleDef, add_internal_function};
 use rquickjs::Ctx;
 use std::error::Error;
 use std::path::Path;

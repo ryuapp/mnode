@@ -1,4 +1,4 @@
-use mnode_utils::ModuleDef;
+use utils::ModuleDef;
 use rquickjs::loader::{Loader, Resolver};
 use rquickjs::{Ctx, Error, Module, Result};
 use std::collections::HashMap;
@@ -45,35 +45,35 @@ impl Default for ModuleBuilder {
 
         #[cfg(feature = "console")]
         {
-            builder = builder.with_global(mnode_console::init);
+            builder = builder.with_global(web_console::init);
         }
         #[cfg(feature = "navigator")]
         {
-            builder = builder.with_global(mnode_navigator::init);
+            builder = builder.with_global(web_navigator::init);
         }
         #[cfg(feature = "url")]
         {
-            builder = builder.with_global(mnode_url::init);
+            builder = builder.with_global(web_url::init);
         }
         #[cfg(feature = "encoding")]
         {
-            builder = builder.with_global(mnode_encoding::init);
+            builder = builder.with_global(web_encoding::init);
         }
         #[cfg(any(feature = "fetch", feature = "fetch-rustls"))]
         {
-            builder = builder.with_global(mnode_fetch::init);
+            builder = builder.with_global(web_fetch::init);
         }
         #[cfg(feature = "fs")]
         {
             builder = builder
-                .with_global(mnode_fs::FsModule::init)
-                .with_module::<mnode_fs::FsModule>();
+                .with_global(node_fs::FsModule::init)
+                .with_module::<node_fs::FsModule>();
         }
         #[cfg(feature = "process")]
         {
             builder = builder
-                .with_global(mnode_process::ProcessModule::init)
-                .with_module::<mnode_process::ProcessModule>();
+                .with_global(node_process::ProcessModule::init)
+                .with_module::<node_process::ProcessModule>();
         }
 
         builder
