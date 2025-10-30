@@ -28,10 +28,12 @@ The tier system does not imply stability, but rather indicates the priority of a
 ### Tier 2
 
 - `x86_64-unknown-linux-gnu`
+- `x86_64-unknown-linux-musl`
 
 ### Tier 3
 
 - `aarch64-unknown-linux-gnu`
+- `aarch64-unknown-linux-musl`
 - `aarch64-apple-darwin`
 - `aarch64-pc-windows-msvc`
 
@@ -39,5 +41,3 @@ The tier system does not imply stability, but rather indicates the priority of a
 
 Starting with `deno compile`, we've made it easy to distribute JavaScript runtimes and scripts as single executable applications. While similar functionality is possible with Node.js, Bun, or Andromeda, the file sizes are too large for simple CLI tools.\
 To solive this issue, We're developing a new JavaScript runtime using QuickJS, the most lightweight JavaScript engine.
-
-Currently, we are only creating the API necessary for [pindeps](https://github.com/ryuapp/pindeps).
