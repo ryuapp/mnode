@@ -22,16 +22,27 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut file_path: Option<String> = None;
     let mut is_compile = false;
 
-    while let Some(arg) = raw.next(&mut cursor) {
+    if let Some(arg) = raw.next(&mut cursor) {
         if let Ok(value) = arg.to_value() {
             match value {
-                "--compile" | "-c" => {
+                "compile" => {
                     is_compile = true;
+                    if let Some(file_arg) = raw.next(&mut cursor) {
+                        if let Ok(file_value) = file_arg.to_value() {
+                            file_path = Some(file_value.to_string());
+                        }
+                    }
+                }
+                "run" => {
+                    if let Some(file_arg) = raw.next(&mut cursor) {
+                        if let Ok(file_value) = file_arg.to_value() {
+                            file_path = Some(file_value.to_string());
+                        }
+                    }
                 }
                 _ if !value.starts_with('-') => {
-                    if file_path.is_none() {
-                        file_path = Some(value.to_string());
-                    }
+                    // No subcommand, treat as file path (run mode)
+                    file_path = Some(value.to_string());
                 }
                 _ => {}
             }
