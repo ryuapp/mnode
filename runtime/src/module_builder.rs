@@ -22,6 +22,7 @@ impl ModuleBuilder {
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_module<M: ModuleDef>(mut self) -> Self {
         self.module_sources.insert(M::name(), M::source);
         self

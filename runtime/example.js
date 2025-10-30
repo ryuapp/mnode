@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import process from "node:process";
-
 // Navigator API
 console.log("Navigator:", navigator.userAgent);
 
@@ -8,12 +5,6 @@ console.log("Navigator:", navigator.userAgent);
 const url = new URL("https://example.com/path?query=value#hash");
 console.log("URL:", url.href);
 
-// File System API
-const isFile = fs.statSync("README.md").isFile();
-console.log("README.md is file:", isFile);
-
-// Process API
-console.log("Process argv:", process.argv);
 console.log(Response);
 // Fetch API
 console.log("\nTesting Fetch API...");

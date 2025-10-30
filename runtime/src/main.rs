@@ -96,7 +96,10 @@ fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn
     context.with(|ctx| -> Result<(), Box<dyn Error>> {
         setup_extensions(&ctx, script_path)?;
 
-        let result = if js_code.contains("import ") || js_code.contains("export ") {
+        let result = if script_path.ends_with(".js")
+            || js_code.contains("import ")
+            || js_code.contains("export ")
+        {
             use rquickjs::Module;
             Module::evaluate(ctx.clone(), script_path, js_code).and_then(|m| m.finish::<()>())
         } else {
