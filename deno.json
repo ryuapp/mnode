@@ -8,10 +8,10 @@
     "format:mdx": "deno run -A npm:prettier --write ./docs/src/content/**/*.mdx",
     "check:format": "deno fmt --check && deno lint && cargo fmt --check && deno task check:format:mdx",
     "check:format:mdx": "deno run -A npm:prettier --check ./docs/src/content/**/*.mdx",
-    "run:example": "cargo run -- runtime/example.js",
-    "compile:example": "cargo run --release -- -c runtime/example.js",
-    "rustls:run:example": "cargo run --no-default-features --features console,navigator,url,encoding,fetch-rustls --release -- runtime/example.js",
-    "rustls:compile:example": "cargo run --release --no-default-features --features console,navigator,url,encoding,fetch-rustls -- -c runtime/example.js"
+    "run:example": "cargo run -- run runtime/example.js",
+    "compile:example": "cargo run --release -- compile runtime/example.js",
+    "rustls:run:example": "cargo run --no-default-features --features console,navigator,url,encoding,fetch-rustls --release -- run runtime/example.js",
+    "rustls:compile:example": "cargo run --release --no-default-features --features console,navigator,url,encoding,fetch-rustls -- compile runtime/example.js"
   },
   "imports": {
     "prettier": "npm:prettier@3.6.2"

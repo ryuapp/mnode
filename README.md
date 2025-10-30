@@ -8,13 +8,14 @@ mDeno is a minimal JavaScript runtime for CLI tools. It's built on QuickJS and R
 cargo install --git https://github.com/ryuapp/mdeno mdeno
 ```
 
-### How to use
+## How to use
 
 ```sh
 # Run JavaScript code
-mdeno hello.js
+mdeno run hello.js
+
 # Compile JavaScript into a self-contained executable
-mdeno --compile hello.js
+mdeno compile hello.js
 ```
 
 ## Supported Platforms
