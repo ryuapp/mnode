@@ -1,5 +1,5 @@
-use utils::add_internal_function;
 use rquickjs::{Ctx, Result};
+use utils::add_internal_function;
 
 pub fn init(ctx: &Ctx<'_>) -> Result<()> {
     add_internal_function!(ctx, "print", |msg: String| {

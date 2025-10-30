@@ -7,11 +7,11 @@ import starlightThemeRapide from "starlight-theme-rapide";
 export default defineConfig({
   integrations: [starlight({
     plugins: [starlightThemeRapide()],
-    title: "mnode",
+    title: "mdeno",
     social: [{
       icon: "github",
       label: "GitHub",
-      href: "https://github.com/ryuapp/mnode",
+      href: "https://github.com/ryuapp/mdeno",
     }],
     sidebar: [
       {

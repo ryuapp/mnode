@@ -86,7 +86,7 @@ function formatValue(arg) {
   }
 }
 
-const print = globalThis[Symbol.for("mnode.internal")].print;
+const print = globalThis[Symbol.for("mdeno.internal")].print;
 
 globalThis.console = {
   log(...args) {

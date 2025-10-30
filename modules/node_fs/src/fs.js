@@ -1,4 +1,4 @@
-const internal = globalThis[Symbol.for("mnode.internal")];
+const internal = globalThis[Symbol.for("mdeno.internal")];
 
 function getEncoding(optOrCallback) {
   if (!optOrCallback || typeof optOrCallback === "function") {

@@ -1,30 +1,30 @@
 ---
 title: Getting Started
-description: A guide in mnode.
+description: A guide in mdeno.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
 <Aside type="caution">
-  mnode is a runtime still under development, and this document may not
+  mdeno is a runtime still under development, and this document may not
   immediately reflect the specifications.
 </Aside>
 
-mnode is a minimal JavaScript runtime for CLI tools. It's built on QuickJS and Rust.
+mdeno is a minimal JavaScript runtime for CLI tools. It's built on QuickJS and Rust.
 
 ## Install
 
 ```sh
-cargo install --git https://github.com/ryuapp/mnode mnode
+cargo install --git https://github.com/ryuapp/mdeno mdeno
 ```
 
 ### How to use
 
 ```sh
 # Run JavaScript code
-mnode hello.js
+mdeno hello.js
 # Compile JavaScript into a self-contained executable
-mnode --compile hello.js
+mdeno --compile hello.js
 ```
 
 ## Supported Platforms

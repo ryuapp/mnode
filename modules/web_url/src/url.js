@@ -12,7 +12,7 @@ class URL {
   #hash;
 
   constructor(url, base) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const parseURL = internal.url.parse;
 
     try {
@@ -39,7 +39,7 @@ class URL {
   }
 
   set href(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const parseURL = internal.url.parse;
 
     const result = JSON.parse(parseURL(String(value), ""));
@@ -65,7 +65,7 @@ class URL {
   }
 
   set protocol(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -80,7 +80,7 @@ class URL {
   }
 
   set username(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -95,7 +95,7 @@ class URL {
   }
 
   set password(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -110,7 +110,7 @@ class URL {
   }
 
   set host(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -127,7 +127,7 @@ class URL {
   }
 
   set hostname(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -143,7 +143,7 @@ class URL {
   }
 
   set port(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -159,7 +159,7 @@ class URL {
   }
 
   set pathname(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -174,7 +174,7 @@ class URL {
   }
 
   set search(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(
@@ -189,7 +189,7 @@ class URL {
   }
 
   set hash(value) {
-    const internal = globalThis[Symbol.for("mnode.internal")];
+    const internal = globalThis[Symbol.for("mdeno.internal")];
     const setComponent = internal.url.setComponent;
 
     const result = JSON.parse(

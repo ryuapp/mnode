@@ -1,20 +1,20 @@
-# mnode
+# mDeno
 
-mnode is a minimal JavaScript runtime for CLI tools. It's built on QuickJS and Rust.
+mDeno is a minimal JavaScript runtime for CLI tools. It's built on QuickJS and Rust.
 
 ## Install
 
 ```sh
-cargo install --git https://github.com/ryuapp/mnode mnode
+cargo install --git https://github.com/ryuapp/mdeno mdeno
 ```
 
 ### How to use
 
 ```sh
 # Run JavaScript code
-mnode hello.js
+mdeno hello.js
 # Compile JavaScript into a self-contained executable
-mnode --compile hello.js
+mdeno --compile hello.js
 ```
 
 ## Supported Platforms

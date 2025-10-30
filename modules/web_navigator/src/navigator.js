@@ -1,7 +1,7 @@
 class Navigator {
   constructor() {
-    this.userAgent = "mnode";
-    this.platform = globalThis[Symbol.for("mnode.internal")].platform;
+    this.userAgent = "mdeno";
+    this.platform = globalThis[Symbol.for("mdeno.internal")].platform;
   }
 }
 

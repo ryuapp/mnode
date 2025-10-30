@@ -5,7 +5,7 @@ use std::fs;
 
 mod module_builder;
 
-const SECTION_NAME: &str = "mnode_js";
+const SECTION_NAME: &str = "mdeno_js";
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if this executable has embedded JavaScript code and no arguments
@@ -193,10 +193,10 @@ fn extract_embedded_js() -> Result<String, Box<dyn Error>> {
 fn setup_extensions(ctx: &rquickjs::Ctx, _script_path: &str) -> Result<(), Box<dyn Error>> {
     use module_builder::ModuleBuilder;
 
-    // Initialize mnode.internal object
+    // Initialize mdeno.internal object
     ctx.eval::<(), _>(
-        r#"if (!globalThis[Symbol.for("mnode.internal")]) {
-  globalThis[Symbol.for("mnode.internal")] = {};
+        r#"if (!globalThis[Symbol.for("mdeno.internal")]) {
+  globalThis[Symbol.for("mdeno.internal")] = {};
 }"#,
     )?;
 

@@ -1,7 +1,7 @@
+use mdeno_utils::add_internal_function;
 use rquickjs::Ctx;
 use std::error::Error;
 use url::Url;
-use utils::add_internal_function;
 
 pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
     setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;

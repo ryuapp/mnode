@@ -10,8 +10,8 @@ pub trait ModuleDef {
 macro_rules! add_internal_function {
     ($ctx:expr, $name:expr, $func:expr) => {{
         use rquickjs::function::Func;
-        let temp_name = format!("__mnode_internal_{}", $name.replace('.', "_"));
-        let internal_path = format!("globalThis[Symbol.for('mnode.internal')].{}", $name);
+        let temp_name = format!("__mdeno_internal_{}", $name.replace('.', "_"));
+        let internal_path = format!("globalThis[Symbol.for('mdeno.internal')].{}", $name);
 
         let func = Func::from($func);
         $ctx.globals().set(temp_name.as_str(), func)?;
