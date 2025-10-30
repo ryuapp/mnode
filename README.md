@@ -34,6 +34,7 @@ The tier system does not imply stability, but rather indicates the priority of a
 
 - `aarch64-unknown-linux-gnu`
 - `aarch64-unknown-linux-musl`
+- `x86_64-apple-darwin`
 - `aarch64-apple-darwin`
 - `aarch64-pc-windows-msvc`
 
