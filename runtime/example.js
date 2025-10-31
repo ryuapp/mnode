@@ -1,6 +1,10 @@
 // Navigator API
 console.log("Navigator:", navigator.userAgent);
 
+// Deno FileSystem API
+const data = Deno.readTextFileSync("README.md");
+console.log(data);
+
 // URL API
 const url = new URL("https://example.com/path?query=value#hash");
 console.log("URL:", url.href);
