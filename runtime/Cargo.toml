@@ -4,13 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-default = ["console", "navigator", "url", "encoding", "fetch"]
+default = ["console", "navigator", "url", "encoding", "fetch", "deno_fs"]
 console = ["dep:web_console"]
 navigator = ["dep:web_navigator"]
 url = ["dep:web_url"]
 encoding = ["dep:web_encoding"]
 fetch = ["dep:web_fetch", "web_fetch?/native-tls"]
 fetch-rustls = ["dep:web_fetch", "web_fetch?/rustls"]
+deno_fs = ["dep:deno_fs"]
 
 [dependencies]
 anyhow = "1.0.100"
@@ -20,6 +21,7 @@ rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] 
 utils = { path = "../modules/utils" }
 
 # Modules
+deno_fs = { path = "../modules/deno_fs", optional = true }
 web_console = { path = "../modules/web_console", optional = true }
 web_encoding = { path = "../modules/web_encoding", optional = true }
 web_fetch = { path = "../modules/web_fetch", optional = true, default-features = false }

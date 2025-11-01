@@ -64,6 +64,10 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(web_fetch::init);
         }
+        #[cfg(feature = "deno_fs")]
+        {
+            builder = builder.with_global(deno_fs::init);
+        }
         builder
     }
 }

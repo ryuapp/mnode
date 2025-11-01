@@ -55,6 +55,9 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Setup dtask
+        run: cargo install --git https://github.com/ryuapp/dtask dtask
+
       - name: Cache musl tools
         if: endsWith(matrix.target, '-musl')
         uses: awalsh128/cache-apt-pkgs-action@v1
@@ -62,18 +65,19 @@ jobs:
           packages: musl-tools pkg-config
       - name: Add target
         run: rustup target add ${{ matrix.target }}
-      - name: Build (musl with rustls)
-        if: endsWith(matrix.target, '-musl')
-        run: cargo build --release --target ${{ matrix.target }} --features fetch-rustls --no-default-features --features console,navigator,url,encoding,fetch-rustls
       - name: Build
         if: ${{ !endsWith(matrix.target, '-musl') }}
-        run: cargo build --release --target ${{ matrix.target }}
-      - name: Test (musl with rustls)
+        run: dtask build --target ${{ matrix.target }}
+      - name: Build (rustls)
         if: endsWith(matrix.target, '-musl')
-        run: cargo test --release --target ${{ matrix.target }} --features fetch-rustls --no-default-features --features console,navigator,url,encoding,fetch-rustls
+        run: dtask build:rustls --target ${{ matrix.target }}
       - name: Test
         if: ${{ !endsWith(matrix.target, '-musl') }}
-        run: cargo test --release --target ${{ matrix.target }}
+        run: dtask test --target ${{ matrix.target }}
+      - name: Test (rustls)
+        if: endsWith(matrix.target, '-musl')
+        run: dtask test:rustls --target ${{ matrix.target }}
+
       - name: Collect binary size (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -92,6 +96,7 @@ jobs:
           $json | Out-File -FilePath ".\sizes\${{ matrix.target }}.json" -Encoding UTF8
           cat ".\sizes\${{ matrix.target }}.json"
         shell: pwsh
+
       - name: Upload binary size info
         uses: actions/upload-artifact@v5
         with:
