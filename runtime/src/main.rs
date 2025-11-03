@@ -1,5 +1,5 @@
 use clap_lex::RawArgs;
-use rquickjs::{CatchResultExt, CaughtError, Context, Runtime};
+use rquickjs::{CatchResultExt, CaughtError, Context, Module, Runtime};
 use std::error::Error;
 use std::fs;
 
@@ -107,14 +107,14 @@ fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn
     context.with(|ctx| -> Result<(), Box<dyn Error>> {
         setup_extensions(&ctx, script_path)?;
 
-        let result = if script_path.ends_with(".js")
-            || js_code.contains("import ")
-            || js_code.contains("export ")
-        {
-            use rquickjs::Module;
-            Module::evaluate(ctx.clone(), script_path, js_code).and_then(|m| m.finish::<()>())
+        let effective_path = if script_path.is_empty() {
+            "./$mdeno$eval.js"
         } else {
-            ctx.eval::<(), _>(js_code)
+            script_path
+        };
+
+        let result = {
+            Module::evaluate(ctx.clone(), effective_path, js_code).and_then(|m| m.finish::<()>())
         };
 
         if let Err(caught) = result.catch(&ctx) {
