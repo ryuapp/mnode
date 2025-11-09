@@ -5,6 +5,13 @@ use std::sync::{Arc, Mutex};
 use utils::add_internal_function;
 
 pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
+    #[cfg(feature = "rustls")]
+    {
+        // Initialize rustls crypto provider
+        use rustls::crypto::ring::default_provider;
+        let _ = default_provider().install_default();
+    }
+
     setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
     ctx.eval::<(), _>(include_str!("fetch.js"))
 }
@@ -16,13 +23,7 @@ struct FetchState {
     pending: HashMap<u64, Arc<Mutex<FetchResult>>>,
 }
 
-static RUNTIME: once_cell::sync::Lazy<tokio::runtime::Runtime> = once_cell::sync::Lazy::new(|| {
-    tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(4)
-        .enable_all()
-        .build()
-        .expect("Failed to create Tokio runtime")
-});
+// Use smol's global executor instead of maintaining our own runtime
 
 static FETCH_STATE: once_cell::sync::Lazy<Mutex<FetchState>> = once_cell::sync::Lazy::new(|| {
     Mutex::new(FetchState {
@@ -55,10 +56,11 @@ fn fetch_start(url: String, method: String, headers: String, body: String) -> u6
     let result = Arc::new(Mutex::new(None));
     state.pending.insert(id, result.clone());
 
-    RUNTIME.spawn(async move {
+    smol::spawn(async move {
         let res = fetch_request(url, method, headers, body).await;
         *result.lock().unwrap() = Some(res);
-    });
+    })
+    .detach();
 
     id
 }
@@ -155,19 +157,20 @@ async fn fetch_request(
 
 #[cfg(feature = "native-tls")]
 mod tls {
-    use tokio::net::TcpStream;
+    use futures_io::{AsyncRead, AsyncWrite};
+    use smol::net::TcpStream;
 
     pub enum IoStream {
         Plain(TcpStream),
-        Tls(tokio_native_tls::TlsStream<TcpStream>),
+        Tls(async_native_tls::TlsStream<TcpStream>),
     }
 
-    impl tokio::io::AsyncRead for IoStream {
+    impl AsyncRead for IoStream {
         fn poll_read(
             mut self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
-            buf: &mut tokio::io::ReadBuf<'_>,
-        ) -> std::task::Poll<std::io::Result<()>> {
+            buf: &mut [u8],
+        ) -> std::task::Poll<std::io::Result<usize>> {
             match &mut *self {
                 IoStream::Plain(s) => std::pin::Pin::new(s).poll_read(cx, buf),
                 IoStream::Tls(s) => std::pin::Pin::new(s).poll_read(cx, buf),
@@ -175,7 +178,7 @@ mod tls {
         }
     }
 
-    impl tokio::io::AsyncWrite for IoStream {
+    impl AsyncWrite for IoStream {
         fn poll_write(
             mut self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
@@ -197,27 +200,23 @@ mod tls {
             }
         }
 
-        fn poll_shutdown(
+        fn poll_close(
             mut self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
         ) -> std::task::Poll<std::io::Result<()>> {
             match &mut *self {
-                IoStream::Plain(s) => std::pin::Pin::new(s).poll_shutdown(cx),
-                IoStream::Tls(s) => std::pin::Pin::new(s).poll_shutdown(cx),
+                IoStream::Plain(s) => std::pin::Pin::new(s).poll_close(cx),
+                IoStream::Tls(s) => std::pin::Pin::new(s).poll_close(cx),
             }
         }
     }
 
     pub async fn create_tls_stream(host: &str, port: u16) -> Result<IoStream, String> {
-        use tokio::net::TcpStream;
-
         let stream = TcpStream::connect(format!("{}:{}", host, port))
             .await
             .map_err(|e| format!("Connection failed: {}", e))?;
 
-        let connector = tokio_native_tls::native_tls::TlsConnector::new()
-            .map_err(|e| format!("TLS connector creation failed: {}", e))?;
-        let connector = tokio_native_tls::TlsConnector::from(connector);
+        let connector = async_native_tls::TlsConnector::new();
         let tls_stream = connector
             .connect(host, stream)
             .await
@@ -225,24 +224,33 @@ mod tls {
 
         Ok(IoStream::Tls(tls_stream))
     }
+
+    pub async fn create_plain_stream(host: &str, port: u16) -> Result<IoStream, String> {
+        let stream = TcpStream::connect(format!("{}:{}", host, port))
+            .await
+            .map_err(|e| format!("Connection failed: {}", e))?;
+        Ok(IoStream::Plain(stream))
+    }
 }
 
 #[cfg(feature = "rustls")]
 mod tls {
+    use futures_io::{AsyncRead, AsyncWrite};
+    use futures_rustls::TlsConnector;
+    use smol::net::TcpStream;
     use std::sync::Arc;
-    use tokio::net::TcpStream;
 
     pub enum IoStream {
         Plain(TcpStream),
-        Tls(tokio_rustls::client::TlsStream<TcpStream>),
+        Tls(futures_rustls::client::TlsStream<TcpStream>),
     }
 
-    impl tokio::io::AsyncRead for IoStream {
+    impl AsyncRead for IoStream {
         fn poll_read(
             mut self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
-            buf: &mut tokio::io::ReadBuf<'_>,
-        ) -> std::task::Poll<std::io::Result<()>> {
+            buf: &mut [u8],
+        ) -> std::task::Poll<std::io::Result<usize>> {
             match &mut *self {
                 IoStream::Plain(s) => std::pin::Pin::new(s).poll_read(cx, buf),
                 IoStream::Tls(s) => std::pin::Pin::new(s).poll_read(cx, buf),
@@ -250,7 +258,7 @@ mod tls {
         }
     }
 
-    impl tokio::io::AsyncWrite for IoStream {
+    impl AsyncWrite for IoStream {
         fn poll_write(
             mut self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
@@ -272,20 +280,19 @@ mod tls {
             }
         }
 
-        fn poll_shutdown(
+        fn poll_close(
             mut self: std::pin::Pin<&mut Self>,
             cx: &mut std::task::Context<'_>,
         ) -> std::task::Poll<std::io::Result<()>> {
             match &mut *self {
-                IoStream::Plain(s) => std::pin::Pin::new(s).poll_shutdown(cx),
-                IoStream::Tls(s) => std::pin::Pin::new(s).poll_shutdown(cx),
+                IoStream::Plain(s) => std::pin::Pin::new(s).poll_close(cx),
+                IoStream::Tls(s) => std::pin::Pin::new(s).poll_close(cx),
             }
         }
     }
 
     pub async fn create_tls_stream(host: &str, port: u16) -> Result<IoStream, String> {
-        use tokio::net::TcpStream;
-        use tokio_rustls::rustls;
+        use rustls::pki_types::ServerName;
 
         let stream = TcpStream::connect(format!("{}:{}", host, port))
             .await
@@ -299,8 +306,8 @@ mod tls {
             .with_root_certificates(root_store)
             .with_no_client_auth();
 
-        let connector = tokio_rustls::TlsConnector::from(Arc::new(config));
-        let server_name = rustls::pki_types::ServerName::try_from(host.to_string())
+        let connector = TlsConnector::from(Arc::new(config));
+        let server_name = ServerName::try_from(host.to_string())
             .map_err(|e| format!("Invalid server name: {}", e))?;
 
         let tls_stream = connector
@@ -310,21 +317,26 @@ mod tls {
 
         Ok(IoStream::Tls(tls_stream))
     }
-}
 
-use tls::IoStream;
+    pub async fn create_plain_stream(host: &str, port: u16) -> Result<IoStream, String> {
+        let addr = format!("{}:{}", host, port);
+        let stream = TcpStream::connect(&addr)
+            .await
+            .map_err(|e| format!("Connection failed: {}", e))?;
+        Ok(IoStream::Plain(stream))
+    }
+}
 
 async fn fetch_impl(
     req: hyper::Request<http_body_util::Empty<bytes::Bytes>>,
 ) -> Result<hyper::Response<hyper::body::Incoming>, String> {
-    use hyper_util::rt::TokioIo;
-    use tokio::net::TcpStream;
+    use smol_hyper::rt::FuturesIo;
 
     let host = req.uri().host().ok_or("Missing host")?;
     let scheme = req.uri().scheme_str().unwrap_or("http");
 
     // Determine port and create appropriate stream
-    let io = match scheme {
+    let io_stream = match scheme {
         "https" => {
             let port = req.uri().port_u16().unwrap_or(443);
 
@@ -335,27 +347,24 @@ async fn fetch_impl(
                 host
             };
 
-            let io_stream = tls::create_tls_stream(tls_host, port).await?;
-            TokioIo::new(io_stream)
+            tls::create_tls_stream(tls_host, port).await?
         }
         "http" => {
             let port = req.uri().port_u16().unwrap_or(80);
 
             // Resolve host to avoid IPv6 fallback delays
-            let addr = if host == "localhost" {
-                format!("127.0.0.1:{}", port)
+            let http_host = if host == "localhost" {
+                "127.0.0.1"
             } else {
-                format!("{}:{}", host, port)
+                host
             };
 
-            let stream = TcpStream::connect(&addr)
-                .await
-                .map_err(|e| format!("Connection failed: {}", e))?;
-
-            TokioIo::new(IoStream::Plain(stream))
+            tls::create_plain_stream(http_host, port).await?
         }
         scheme => return Err(format!("Unsupported scheme: {}", scheme)),
     };
+
+    let io = FuturesIo::new(io_stream);
 
     // Establish HTTP connection
     let (mut sender, conn) = hyper::client::conn::http1::handshake(io)
@@ -363,11 +372,12 @@ async fn fetch_impl(
         .map_err(|e| format!("Handshake failed: {}", e))?;
 
     // Spawn connection task
-    tokio::spawn(async move {
+    smol::spawn(async move {
         if let Err(e) = conn.await {
             eprintln!("Connection error: {:?}", e);
         }
-    });
+    })
+    .detach();
 
     // Send request
     sender
