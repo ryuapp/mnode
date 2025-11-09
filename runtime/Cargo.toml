@@ -14,10 +14,11 @@ fetch-rustls = ["dep:web_fetch", "web_fetch?/rustls"]
 deno_fs = ["dep:deno_fs"]
 
 [dependencies]
-anyhow = "1.0.100"
-clap_lex = "0.7.5"
-libsui = "0.10.0"
+anyhow = { version = "1.0.100" }
+clap_lex = { version = "0.7.5" }
+libsui = { version = "0.10.0" }
 rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
+smol = { version = "2.0.2" }
 utils = { path = "../modules/utils" }
 
 # Modules

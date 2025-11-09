@@ -90,60 +90,63 @@ fn run_js_code_with_path(js_code: &str, script_path: &str) -> Result<(), Box<dyn
     use module_builder::ModuleBuilder;
     use std::sync::Arc;
 
-    let runtime = Runtime::new()?;
+    smol::block_on(async {
+        let runtime = Runtime::new()?;
 
-    // Build module configuration
-    let (_global_attachment, module_registry) = ModuleBuilder::default().build();
-    let registry = Arc::new(module_registry);
+        // Build module configuration
+        let (_global_attachment, module_registry) = ModuleBuilder::default().build();
+        let registry = Arc::new(module_registry);
 
-    // Set module loader before creating context
-    runtime.set_loader(
-        module_builder::NodeResolver::new(registry.clone()),
-        module_builder::NodeLoader::new(registry.clone()),
-    );
+        // Set module loader before creating context
+        runtime.set_loader(
+            module_builder::NodeResolver::new(registry.clone()),
+            module_builder::NodeLoader::new(registry.clone()),
+        );
 
-    let context = Context::full(&runtime)?;
+        let context = Context::full(&runtime)?;
 
-    context.with(|ctx| -> Result<(), Box<dyn Error>> {
-        setup_extensions(&ctx, script_path)?;
+        context.with(|ctx| -> Result<(), Box<dyn Error>> {
+            setup_extensions(&ctx, script_path)?;
 
-        let effective_path = if script_path.is_empty() {
-            "./$mdeno$eval.js"
-        } else {
-            script_path
-        };
+            let effective_path = if script_path.is_empty() {
+                "./$mdeno$eval.js"
+            } else {
+                script_path
+            };
 
-        let result = {
-            Module::evaluate(ctx.clone(), effective_path, js_code).and_then(|m| m.finish::<()>())
-        };
+            let result = {
+                Module::evaluate(ctx.clone(), effective_path, js_code)
+                    .and_then(|m| m.finish::<()>())
+            };
 
-        if let Err(caught) = result.catch(&ctx) {
-            match caught {
-                CaughtError::Exception(exception) => {
-                    if let Some(message) = exception.message() {
-                        eprintln!("Error: {}", message);
+            if let Err(caught) = result.catch(&ctx) {
+                match caught {
+                    CaughtError::Exception(exception) => {
+                        if let Some(message) = exception.message() {
+                            eprintln!("Error: {}", message);
+                        }
+                        if let Some(stack) = exception.stack() {
+                            eprintln!("{}", stack);
+                        }
                     }
-                    if let Some(stack) = exception.stack() {
-                        eprintln!("{}", stack);
+                    CaughtError::Value(value) => {
+                        eprintln!("Error: {:?}", value);
+                    }
+                    CaughtError::Error(error) => {
+                        eprintln!("Error: {:?}", error);
                     }
                 }
-                CaughtError::Value(value) => {
-                    eprintln!("Error: {:?}", value);
-                }
-                CaughtError::Error(error) => {
-                    eprintln!("Error: {:?}", error);
-                }
+                std::process::exit(1);
             }
-            std::process::exit(1);
-        }
 
-        // Execute all pending jobs (promises, microtasks)
-        while ctx.execute_pending_job() {}
+            // Execute all pending jobs (promises, microtasks)
+            while ctx.execute_pending_job() {}
+
+            Ok(())
+        })?;
 
         Ok(())
-    })?;
-
-    Ok(())
+    })
 }
 
 fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<dyn Error>> {
