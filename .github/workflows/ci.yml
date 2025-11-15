@@ -38,10 +38,12 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+            use_cross: true
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-musl
+            use_cross: true
           - os: macos-15
             target: x86_64-apple-darwin
           - os: macos-15
@@ -53,30 +55,39 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install Rust
+        if: ${{ !matrix.use_cross }}
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt,clippy
+      - name: Install Rust (cross)
+        if: matrix.use_cross
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
       - name: Setup dtask
+        if: ${{ !matrix.use_cross }}
         run: cargo install --git https://github.com/ryuapp/dtask dtask
 
-      - name: Cache musl tools
-        if: endsWith(matrix.target, '-musl')
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: musl-tools pkg-config
+      - name: Install cross
+        if: matrix.use_cross
+        run: cargo install cross --locked
+
       - name: Add target
+        if: ${{ !matrix.use_cross }}
         run: rustup target add ${{ matrix.target }}
       - name: Build
-        if: ${{ !endsWith(matrix.target, '-musl') }}
+        if: ${{ !matrix.use_cross }}
         run: dtask build --target ${{ matrix.target }}
-      - name: Build (rustls)
-        if: endsWith(matrix.target, '-musl')
-        run: dtask build:rustls --target ${{ matrix.target }}
+      - name: Build (cross)
+        if: matrix.use_cross
+        run: cross build --release --target ${{ matrix.target }} --no-default-features --features console,navigator,url,encoding,fetch-rustls,deno_fs,deno_os
       - name: Test
-        if: ${{ !endsWith(matrix.target, '-musl') }}
+        if: ${{ !matrix.use_cross }}
         run: dtask test --target ${{ matrix.target }}
-      - name: Test (rustls)
-        if: endsWith(matrix.target, '-musl')
-        run: dtask test:rustls --target ${{ matrix.target }}
+      - name: Test (cross)
+        if: matrix.use_cross
+        run: cross test --release --target ${{ matrix.target }} --no-default-features --features console,navigator,url,encoding,fetch-rustls,deno_fs,deno_os
 
       - name: Collect binary size (Unix)
         if: runner.os != 'Windows'
