@@ -68,6 +68,10 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(deno_fs::init);
         }
+        #[cfg(feature = "deno_os")]
+        {
+            builder = builder.with_global(deno_os::init);
+        }
         builder
     }
 }

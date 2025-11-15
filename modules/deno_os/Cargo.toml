@@ -1,0 +1,12 @@
+[package]
+name = "deno_os"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
+serde_json = { version = "1.0.145" }
+utils = { path = "../utils" }

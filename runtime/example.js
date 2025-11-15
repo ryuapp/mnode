@@ -24,3 +24,6 @@ try {
 } catch (error) {
   console.error("Fetch error:", error.message);
 }
+
+Deno.exit(0);
+console.log("exit");
