@@ -39,11 +39,13 @@ jobs:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             use_cross: true
+            gnu_target: x86_64-unknown-linux-gnu
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-musl
             use_cross: true
+            gnu_target: aarch64-unknown-linux-gnu
           - os: macos-15
             target: x86_64-apple-darwin
           - os: macos-15
@@ -55,15 +57,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install Rust
-        if: ${{ !matrix.use_cross }}
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt,clippy
-      - name: Install Rust (cross)
-        if: matrix.use_cross
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
       - name: Setup dtask
         if: ${{ !matrix.use_cross }}
@@ -74,8 +70,7 @@ jobs:
         run: cargo install cross --locked
 
       - name: Add target
-        if: ${{ !matrix.use_cross }}
-        run: rustup target add ${{ matrix.target }}
+        run: rustup target add ${{ matrix.target }} ${{ matrix.gnu_target }}
       - name: Build
         if: ${{ !matrix.use_cross }}
         run: dtask build --target ${{ matrix.target }}
