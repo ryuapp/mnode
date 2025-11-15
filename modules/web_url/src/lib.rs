@@ -29,9 +29,12 @@ fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn parse_url(url_str: String, base: String) -> Result<String, String> {
-    let base_ref = if base.is_empty() { None } else { Some(base.as_str()) };
-    let parsed = ada_url::Url::parse(&url_str, base_ref)
-        .map_err(|_| "Invalid URL".to_string())?;
+    let base_ref = if base.is_empty() {
+        None
+    } else {
+        Some(base.as_str())
+    };
+    let parsed = ada_url::Url::parse(&url_str, base_ref).map_err(|_| "Invalid URL".to_string())?;
 
     let json = serde_json::json!({
         "href": parsed.href(),
@@ -55,8 +58,7 @@ pub fn set_url_component(
     component: String,
     value: String,
 ) -> Result<String, String> {
-    let mut parsed = ada_url::Url::parse(&url_str, None)
-        .map_err(|_| "Invalid URL".to_string())?;
+    let mut parsed = ada_url::Url::parse(&url_str, None).map_err(|_| "Invalid URL".to_string())?;
 
     match component.as_str() {
         "protocol" => {
