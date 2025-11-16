@@ -193,7 +193,7 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
     let size_mb = file_size as f64 / 1024.0 / 1024.0;
 
     println!("Successfully created: {}", output_exe);
-    println!("Size: {:.1} MB", size_mb);
+    println!("Size: {:.2} MB", size_mb);
 
     Ok(())
 }
