@@ -18,6 +18,10 @@ class URL {
     try {
       const result = JSON.parse(parseURL(url, base || ""));
 
+      if (result.error) {
+        throw new TypeError(`Invalid URL: ${url}`);
+      }
+
       this.#href = result.href;
       this.#origin = result.origin;
       this.#protocol = result.protocol;
@@ -43,6 +47,9 @@ class URL {
     const parseURL = internal.url.parse;
 
     const result = JSON.parse(parseURL(String(value), ""));
+    if (result.error) {
+      throw new TypeError(`Invalid URL: ${value}`);
+    }
     this.#href = result.href;
     this.#origin = result.origin;
     this.#protocol = result.protocol;
@@ -71,6 +78,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "protocol", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid protocol: ${value}`);
+    }
     this.#href = result.href;
     this.#protocol = result.protocol;
   }
@@ -86,6 +96,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "username", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid username: ${value}`);
+    }
     this.#href = result.href;
     this.#username = result.username;
   }
@@ -101,6 +114,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "password", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid password: ${value}`);
+    }
     this.#href = result.href;
     this.#password = result.password;
   }
@@ -116,6 +132,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "host", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid host: ${value}`);
+    }
     this.#href = result.href;
     this.#host = result.host;
     this.#hostname = result.hostname;
@@ -133,6 +152,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "hostname", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid hostname: ${value}`);
+    }
     this.#href = result.href;
     this.#host = result.host;
     this.#hostname = result.hostname;
@@ -149,6 +171,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "port", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid port: ${value}`);
+    }
     this.#href = result.href;
     this.#host = result.host;
     this.#port = result.port;
@@ -165,6 +190,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "pathname", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid pathname: ${value}`);
+    }
     this.#href = result.href;
     this.#pathname = result.pathname;
   }
@@ -180,6 +208,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "search", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid search: ${value}`);
+    }
     this.#href = result.href;
     this.#search = result.search;
   }
@@ -195,6 +226,9 @@ class URL {
     const result = JSON.parse(
       setComponent(this.#href, "hash", String(value)),
     );
+    if (result.error) {
+      throw new TypeError(`Invalid hash: ${value}`);
+    }
     this.#href = result.href;
     this.#hash = result.hash;
   }
