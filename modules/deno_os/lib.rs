@@ -40,5 +40,11 @@ fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
+    // Deno.noColor
+    let no_color = env::var("NO_COLOR").is_ok();
+    ctx.globals()
+        .set("__mdeno_no_color", no_color)
+        .map_err(|e| format!("Failed to set __mdeno_no_color: {}", e))?;
+
     Ok(())
 }

@@ -24,3 +24,12 @@ globalThis.Deno.env = {
     return internal.env.toObject();
   },
 };
+
+// https://docs.deno.com/api/deno/~/Deno.noColor
+const noColorValue = globalThis.__mdeno_no_color;
+Object.defineProperty(globalThis.Deno, "noColor", {
+  get() {
+    return noColorValue;
+  },
+});
+delete globalThis.__mdeno_no_color;
