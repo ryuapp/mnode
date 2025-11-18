@@ -425,6 +425,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "deno_ns"
+version = "0.1.0"
+dependencies = [
+ "rquickjs",
+ "utils",
+]
+
+[[package]]
 name = "deno_os"
 version = "0.1.0"
 dependencies = [
@@ -1051,6 +1059,7 @@ dependencies = [
  "anyhow",
  "clap_lex",
  "deno_fs",
+ "deno_ns",
  "deno_os",
  "libsui",
  "rquickjs",

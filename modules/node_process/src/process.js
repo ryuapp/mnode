@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 const env = JSON.parse(__internal.getEnv());
 const argv = JSON.parse(__internal.getArgv());
 

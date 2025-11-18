@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 class Response {
   #status;
   #statusText;

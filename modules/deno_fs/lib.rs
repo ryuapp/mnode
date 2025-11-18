@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-use rquickjs::{Ctx, Result as JsResult};
+use rquickjs::{Ctx, Module, Result as JsResult};
 use serde_json::{Value, json};
 use std::fs;
 use std::path::Path;
@@ -14,10 +14,13 @@ pub fn init(ctx: &Ctx<'_>) -> JsResult<()> {
         rquickjs::Error::Unknown
     })?;
 
-    ctx.eval::<(), _>(include_str!("deno_fs.js")).map_err(|e| {
-        eprintln!("deno_fs.js eval error: {:?}", e);
-        e
-    })?;
+    // Register fs APIs under __mdeno__.fs as a module
+    let module =
+        Module::evaluate(ctx.clone(), "deno_fs", include_str!("deno_fs.js")).map_err(|e| {
+            eprintln!("deno_fs.js eval error: {:?}", e);
+            e
+        })?;
+    module.finish::<()>()?;
 
     Ok(())
 }

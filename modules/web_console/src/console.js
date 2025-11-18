@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 function formatValue(arg) {
   if (typeof arg === "string") return arg;
   if (arg === null) return "null";

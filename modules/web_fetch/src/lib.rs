@@ -1,4 +1,4 @@
-use rquickjs::Ctx;
+use rquickjs::{Ctx, Module};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
@@ -13,7 +13,9 @@ pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
     }
 
     setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
-    ctx.eval::<(), _>(include_str!("fetch.js"))
+    let module = Module::evaluate(ctx.clone(), "web_fetch", include_str!("fetch.js"))?;
+    module.finish::<()>()?;
+    Ok(())
 }
 
 type FetchResult = Option<Result<String, String>>;

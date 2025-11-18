@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 // Base64 encoding/decoding
 globalThis.btoa = function btoa(data) {
   if (typeof data !== "string") {

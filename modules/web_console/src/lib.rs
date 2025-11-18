@@ -1,4 +1,4 @@
-use rquickjs::{Ctx, Result};
+use rquickjs::{Ctx, Module, Result};
 use utils::add_internal_function;
 
 pub fn init(ctx: &Ctx<'_>) -> Result<()> {
@@ -6,7 +6,8 @@ pub fn init(ctx: &Ctx<'_>) -> Result<()> {
         println!("{}", msg);
     });
 
-    ctx.eval::<(), _>(include_str!("console.js"))?;
+    let module = Module::evaluate(ctx.clone(), "web_console", include_str!("console.js"))?;
+    module.finish::<()>()?;
 
     Ok(())
 }
