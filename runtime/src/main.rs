@@ -212,9 +212,10 @@ fn setup_extensions(ctx: &rquickjs::Ctx, _script_path: &str) -> Result<(), Box<d
 
     // Initialize mdeno.internal object
     ctx.eval::<(), _>(
-        r#"if (!globalThis[Symbol.for("mdeno.internal")]) {
-  globalThis[Symbol.for("mdeno.internal")] = {};
-}"#,
+        r#"
+      globalThis[Symbol.for("mdeno.internal")] ||= {};
+      const __internal = globalThis[Symbol.for("mdeno.internal")];
+      "#,
     )?;
 
     // Build module configuration using default (feature-based)

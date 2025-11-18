@@ -3,25 +3,25 @@ globalThis.Deno ||= {};
 
 // https://docs.deno.com/api/deno/~/Deno.exit
 globalThis.Deno.exit = function (code) {
-  internal.exit(code);
+  __internal.exit(code);
 };
 
 // https://docs.deno.com/api/deno/~/Deno.Env
 globalThis.Deno.env = {
   get: function (key) {
-    return internal.env.get(key);
+    return __internal.env.get(key);
   },
   set: function (key, value) {
-    internal.env.set(key, value);
+    __internal.env.set(key, value);
   },
   delete: function (key) {
-    internal.env.delete(key);
+    __internal.env.delete(key);
   },
   has: function (key) {
-    return internal.env.has(key);
+    return __internal.env.has(key);
   },
   toObject: function () {
-    return internal.env.toObject();
+    return __internal.env.toObject();
   },
 };
 

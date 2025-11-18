@@ -86,15 +86,13 @@ function formatValue(arg) {
   }
 }
 
-const print = globalThis[Symbol.for("mdeno.internal")].print;
-
 globalThis.console = {
   log(...args) {
     const formatted = args.map(formatValue).join(" ");
-    print(formatted);
+    __internal.print(formatted);
   },
   error(...args) {
     const formatted = args.map(formatValue).join(" ");
-    print(formatted);
+    __internal.print(formatted);
   },
 };
