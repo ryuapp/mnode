@@ -3,6 +3,9 @@ name = "web_encoding"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
 base64 = "0.22.1"

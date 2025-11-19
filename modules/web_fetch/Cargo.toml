@@ -3,6 +3,9 @@ name = "web_fetch"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 rquickjs = { version = "0.10.0", features = ["classes", "properties", "loader"] }
 smol = { version = "2.0.2" }
