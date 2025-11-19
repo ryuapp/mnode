@@ -27,6 +27,13 @@ Object.defineProperty(denoNs, "noColor", {
   },
 });
 
+// Add build as a getter
+Object.defineProperty(denoNs, "build", {
+  get() {
+    return os.build;
+  },
+});
+
 // Define globalThis.Deno
 Object.defineProperty(globalThis, "Deno", {
   value: denoNs,
