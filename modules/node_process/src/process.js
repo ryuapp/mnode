@@ -1,7 +1,7 @@
-const internal = globalThis[Symbol.for("mdeno.internal")];
+const __internal = globalThis[Symbol.for("mdeno.internal")];
 
-const env = JSON.parse(internal.getEnv());
-const argv = JSON.parse(internal.getArgv());
+const env = JSON.parse(__internal.getEnv());
+const argv = JSON.parse(__internal.getArgv());
 
 function exit(code = 0) {
   internal.exit(code);

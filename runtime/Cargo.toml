@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-default = ["console", "navigator", "url", "encoding", "fetch", "deno_fs", "deno_os"]
+default = ["console", "navigator", "url", "encoding", "fetch", "deno_fs", "deno_os", "deno_ns"]
 console = ["dep:web_console"]
 navigator = ["dep:web_navigator"]
 url = ["dep:web_url"]
@@ -13,6 +13,7 @@ fetch = ["dep:web_fetch", "web_fetch?/native-tls"]
 fetch-rustls = ["dep:web_fetch", "web_fetch?/rustls"]
 deno_fs = ["dep:deno_fs"]
 deno_os = ["dep:deno_os"]
+deno_ns = ["dep:deno_ns"]
 
 [dependencies]
 anyhow = { version = "1.0.100" }
@@ -24,6 +25,7 @@ utils = { path = "../modules/utils" }
 
 # Modules
 deno_fs = { path = "../modules/deno_fs", optional = true }
+deno_ns = { path = "../modules/deno_ns", optional = true }
 deno_os = { path = "../modules/deno_os", optional = true }
 web_console = { path = "../modules/web_console", optional = true }
 web_encoding = { path = "../modules/web_encoding", optional = true }

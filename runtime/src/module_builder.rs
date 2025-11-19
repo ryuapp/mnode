@@ -48,10 +48,6 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(web_console::init);
         }
-        #[cfg(feature = "navigator")]
-        {
-            builder = builder.with_global(web_navigator::init);
-        }
         #[cfg(feature = "url")]
         {
             builder = builder.with_global(web_url::init);
@@ -64,6 +60,14 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(web_fetch::init);
         }
+
+        // Initialize navigator after other modules
+        #[cfg(feature = "navigator")]
+        {
+            builder = builder.with_global(web_navigator::init);
+        }
+
+        // Initialize file system and OS modules
         #[cfg(feature = "deno_fs")]
         {
             builder = builder.with_global(deno_fs::init);
@@ -72,6 +76,13 @@ impl Default for ModuleBuilder {
         {
             builder = builder.with_global(deno_os::init);
         }
+
+        // Initialize Deno namespace (depends on deno_fs and deno_os)
+        #[cfg(feature = "deno_ns")]
+        {
+            builder = builder.with_global(deno_ns::init);
+        }
+
         builder
     }
 }

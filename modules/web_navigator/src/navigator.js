@@ -1,7 +1,9 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 class Navigator {
   constructor() {
     this.userAgent = "mdeno";
-    this.platform = globalThis[Symbol.for("mdeno.internal")].platform;
+    this.platform = __internal.platform;
   }
 }
 

@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 // Base64 encoding/decoding
 globalThis.btoa = function btoa(data) {
   if (typeof data !== "string") {
@@ -6,8 +8,7 @@ globalThis.btoa = function btoa(data) {
     );
   }
 
-  const internal = globalThis[Symbol.for("mdeno.internal")];
-  return internal.encoding.btoa(data);
+  return __internal.encoding.btoa(data);
 };
 
 globalThis.atob = function atob(data) {
@@ -17,8 +18,7 @@ globalThis.atob = function atob(data) {
     );
   }
 
-  const internal = globalThis[Symbol.for("mdeno.internal")];
-  const result = internal.encoding.atob(data);
+  const result = __internal.encoding.atob(data);
 
   // Check if result is an error (string starting with ERROR:)
   if (result.startsWith("ERROR: ")) {
@@ -36,16 +36,14 @@ class TextEncoder {
 
   encode(input = "") {
     const str = String(input);
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const bytesJson = internal.encoding.encode(str);
+    const bytesJson = __internal.encoding.encode(str);
     const bytes = JSON.parse(bytesJson);
     return new Uint8Array(bytes);
   }
 
   encodeInto(source, destination) {
     const str = String(source);
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const bytesJson = internal.encoding.encode(str);
+    const bytesJson = __internal.encoding.encode(str);
     const bytes = JSON.parse(bytesJson);
 
     let written = 0;
@@ -110,10 +108,9 @@ class TextDecoder {
       );
     }
 
-    const internal = globalThis[Symbol.for("mdeno.internal")];
     const bytesArray = Array.from(bytes);
     const bytesJson = JSON.stringify(bytesArray);
-    const result = internal.encoding.decode(bytesJson);
+    const result = __internal.encoding.decode(bytesJson);
 
     if (result.startsWith("ERROR: ")) {
       if (this.#fatal) {

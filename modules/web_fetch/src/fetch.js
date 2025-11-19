@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 class Response {
   #status;
   #statusText;
@@ -119,8 +121,7 @@ async function fetch(url, options = {}) {
   const headersJson = JSON.stringify(headersObj);
 
   // Start async fetch
-  const internal = globalThis[Symbol.for("mdeno.internal")];
-  const taskId = internal.fetch.start(
+  const taskId = __internal.fetch.start(
     String(url),
     method,
     headersJson,
@@ -129,7 +130,7 @@ async function fetch(url, options = {}) {
 
   // Poll for result
   while (true) {
-    const resultJson = internal.fetch.poll(taskId);
+    const resultJson = __internal.fetch.poll(taskId);
     if (resultJson) {
       const result = JSON.parse(resultJson);
 

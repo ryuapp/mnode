@@ -1,12 +1,18 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-use rquickjs::Ctx;
+use rquickjs::{Ctx, Module};
 use std::collections::HashMap;
 use std::env;
 use utils::add_internal_function;
 
 pub fn init(ctx: &Ctx<'_>) -> rquickjs::Result<()> {
     setup_internal(ctx).map_err(|_| rquickjs::Error::Unknown)?;
-    ctx.eval::<(), _>(include_str!("deno_os.js"))
+    let module =
+        Module::evaluate(ctx.clone(), "deno_os", include_str!("deno_os.js")).map_err(|e| {
+            eprintln!("deno_os.js eval error: {:?}", e);
+            e
+        })?;
+    module.finish::<()>()?;
+    Ok(())
 }
 
 fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn std::error::Error>> {
@@ -40,11 +46,13 @@ fn setup_internal(ctx: &Ctx) -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    // Deno.noColor
+    // Deno.noColor - store in internal namespace
     let no_color = env::var("NO_COLOR").is_ok();
-    ctx.globals()
-        .set("__mdeno_no_color", no_color)
-        .map_err(|e| format!("Failed to set __mdeno_no_color: {}", e))?;
+    let script = format!(
+        "globalThis[Symbol.for('mdeno.internal')].noColor = {};",
+        no_color
+    );
+    ctx.eval::<(), _>(script)?;
 
     Ok(())
 }

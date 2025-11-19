@@ -1,3 +1,5 @@
+const __internal = globalThis[Symbol.for("mdeno.internal")];
+
 class URL {
   #href;
   #origin;
@@ -12,8 +14,7 @@ class URL {
   #hash;
 
   constructor(url, base) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const parseURL = internal.url.parse;
+    const parseURL = __internal.url.parse;
 
     try {
       const result = JSON.parse(parseURL(url, base || ""));
@@ -39,8 +40,7 @@ class URL {
   }
 
   set href(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const parseURL = internal.url.parse;
+    const parseURL = __internal.url.parse;
 
     const result = JSON.parse(parseURL(String(value), ""));
     this.#href = result.href;
@@ -65,8 +65,7 @@ class URL {
   }
 
   set protocol(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "protocol", String(value)),
@@ -80,8 +79,7 @@ class URL {
   }
 
   set username(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "username", String(value)),
@@ -95,8 +93,7 @@ class URL {
   }
 
   set password(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "password", String(value)),
@@ -110,8 +107,7 @@ class URL {
   }
 
   set host(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "host", String(value)),
@@ -127,8 +123,7 @@ class URL {
   }
 
   set hostname(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "hostname", String(value)),
@@ -143,8 +138,7 @@ class URL {
   }
 
   set port(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "port", String(value)),
@@ -159,8 +153,7 @@ class URL {
   }
 
   set pathname(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "pathname", String(value)),
@@ -174,8 +167,7 @@ class URL {
   }
 
   set search(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "search", String(value)),
@@ -189,8 +181,7 @@ class URL {
   }
 
   set hash(value) {
-    const internal = globalThis[Symbol.for("mdeno.internal")];
-    const setComponent = internal.url.setComponent;
+    const setComponent = __internal.url.setComponent;
 
     const result = JSON.parse(
       setComponent(this.#href, "hash", String(value)),
