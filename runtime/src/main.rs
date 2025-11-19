@@ -189,6 +189,13 @@ fn compile_js_to_executable(js_file: &str, output_name: &str) -> Result<(), Box<
         elf.append(SECTION_NAME, js_code.as_bytes(), &mut output_file)?;
     }
 
+    // Append magic string "md3n04cl1" to mark this as a standalone binary
+    {
+        use std::io::Write;
+        let mut output_file = fs::OpenOptions::new().append(true).open(&output_exe)?;
+        output_file.write_all(b"md3n04cl1")?;
+    }
+
     let file_size = fs::metadata(&output_exe)?.len();
     let size_mb = file_size as f64 / 1024.0 / 1024.0;
 

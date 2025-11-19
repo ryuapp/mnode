@@ -30,4 +30,8 @@ Object.assign(globalThis.__mdeno__.os, {
   get noColor() {
     return noColorValue;
   },
+
+  get build() {
+    return __internal.build;
+  },
 });
