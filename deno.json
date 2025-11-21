@@ -1,5 +1,5 @@
 {
-  "workspace": ["./docs"],
+  "workspace": ["./docs", "./scripts"],
   "fmt": {
     "proseWrap": "preserve"
   },
@@ -16,7 +16,8 @@
     "compile:example": "cargo run --release -- compile runtime/example.js",
     "rustls:run:example": "cargo run --no-default-features --features console,navigator,url,encoding,fetch-rustls,deno_fs,deno_os --release -- run runtime/example.js",
     "rustls:compile:example": "cargo run --release --no-default-features --features console,navigator,url,encoding,fetch-rustls,deno_fs,deno_os -- compile runtime/example.js",
-    "bloat": "cargo bloat --release"
+    "bloat": "cargo bloat --release",
+    "check:size": "deno -R scripts/check-size.ts"
   },
   "imports": {
     "prettier": "npm:prettier@3.6.2"
