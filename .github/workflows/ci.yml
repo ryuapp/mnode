@@ -78,24 +78,11 @@ jobs:
         if: endsWith(matrix.target, '-musl')
         run: deno task test:rustls --target ${{ matrix.target }}
 
-      - name: Collect binary size (Unix)
-        if: runner.os != 'Windows'
+      - name: Collect binary size
         run: |
           mkdir -p sizes
-          SIZE_B=$(stat -c%s target/${{ matrix.target }}/release/mdeno 2>/dev/null || stat -f%z target/${{ matrix.target }}/release/mdeno)
-          SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $SIZE_B / 1024 / 1024}")
-          echo "{\"target\": \"${{ matrix.target }}\", \"size\": \"$SIZE_MB MB\"}" > sizes/${{ matrix.target }}.json
+          deno task check:size ${{ matrix.target }} > sizes/${{ matrix.target }}.json
           cat sizes/${{ matrix.target }}.json
-      - name: Collect binary size (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          $file = Get-Item target/${{ matrix.target }}/release/mdeno.exe
-          $sizeMB = "{0:N2}" -f ($file.Length / 1MB)
-          $json = @{target = "${{ matrix.target }}"; size = "$sizeMB MB"} | ConvertTo-Json
-          New-Item -ItemType Directory -Path ".\sizes" -Force | Out-Null
-          $json | Out-File -FilePath ".\sizes\${{ matrix.target }}.json" -Encoding UTF8
-          cat ".\sizes\${{ matrix.target }}.json"
-        shell: pwsh
 
       - name: Upload binary size info
         uses: actions/upload-artifact@v5
