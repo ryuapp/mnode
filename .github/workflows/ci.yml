@@ -55,6 +55,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Setup mold
+        uses: rui314/setup-mold@v1
       - name: Setup Deno
         run: npm i -g deno
 
