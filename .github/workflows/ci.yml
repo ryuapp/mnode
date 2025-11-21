@@ -55,8 +55,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Setup dtask
-        run: cargo install --git https://github.com/ryuapp/dtask dtask
+      - name: Setup Deno
+        run: npm i -g deno
 
       - name: Cache musl tools
         if: endsWith(matrix.target, '-musl')
@@ -67,16 +67,16 @@ jobs:
         run: rustup target add ${{ matrix.target }}
       - name: Build
         if: ${{ !endsWith(matrix.target, '-musl') }}
-        run: dtask build --target ${{ matrix.target }}
+        run: deno task build --target ${{ matrix.target }}
       - name: Build (rustls)
         if: endsWith(matrix.target, '-musl')
-        run: dtask build:rustls --target ${{ matrix.target }}
+        run: deno task build:rustls --target ${{ matrix.target }}
       - name: Test
         if: ${{ !endsWith(matrix.target, '-musl') }}
-        run: dtask test --target ${{ matrix.target }}
+        run: deno task test --target ${{ matrix.target }}
       - name: Test (rustls)
         if: endsWith(matrix.target, '-musl')
-        run: dtask test:rustls --target ${{ matrix.target }}
+        run: deno task test:rustls --target ${{ matrix.target }}
 
       - name: Collect binary size (Unix)
         if: runner.os != 'Windows'
